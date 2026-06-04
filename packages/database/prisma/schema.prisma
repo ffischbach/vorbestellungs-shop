@@ -67,16 +67,17 @@ enum OrderStatus {
 
 // Better Auth — Pflicht-Modelle für den Prisma Adapter
 model User {
-  id            String    @id
-  name          String
-  email         String    @unique
-  emailVerified Boolean
-  image         String?
-  createdAt     DateTime
-  updatedAt     DateTime
-  sessions      Session[]
-  accounts      Account[]
-  twoFactors    TwoFactor[]
+  id                 String      @id
+  name               String
+  email              String      @unique
+  emailVerified      Boolean
+  image              String?
+  createdAt          DateTime
+  updatedAt          DateTime
+  twoFactorEnabled   Boolean     @default(false)
+  sessions           Session[]
+  accounts           Account[]
+  twoFactors         TwoFactor[]
 
   @@map("user")
 }

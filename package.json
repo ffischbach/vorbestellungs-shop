@@ -22,12 +22,17 @@
     "admin:create": "pnpm --filter @repo/web admin:create"
   },
   "devDependencies": {
+    "prettier": "^3.4.2",
     "turbo": "^2.3.3",
-    "typescript": "^5.7.2",
-    "prettier": "^3.4.2"
+    "typescript": "^5.7.2"
   },
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "pnpm": {
+    "patchedDependencies": {
+      "kysely@0.29.2": "patches/kysely@0.29.2.patch"
+    }
+  }
 }

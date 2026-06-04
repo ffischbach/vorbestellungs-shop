@@ -1,0 +1,23 @@
+[
+  {
+    "id": "deploy",
+    "execute-command": "/scripts/deploy.sh",
+    "command-working-directory": "/opt/shop",
+    "pass-arguments-to-command": [
+      {
+        "source": "payload",
+        "name": "version"
+      }
+    ],
+    "trigger-rule": {
+      "match": {
+        "type": "payload-hmac-sha256",
+        "secret": "{{ .Env.DEPLOY_WEBHOOK_SECRET }}",
+        "parameter": {
+          "source": "header",
+          "name": "X-Hub-Signature-256"
+        }
+      }
+    }
+  }
+]

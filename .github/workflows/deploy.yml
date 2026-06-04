@@ -1,0 +1,49 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-push:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      version: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+  deploy:
+    name: Deploy via Webhook
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deploy
+        env:
+          DEPLOY_WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
+        run: |
+          PAYLOAD='{"version":"${{ github.sha }}"}'
+          SIGNATURE=$(printf '%s' "$PAYLOAD" | openssl dgst -sha256 -hmac "$DEPLOY_WEBHOOK_SECRET" | awk '{print $NF}')
+          curl --fail --silent --show-error \
+            -X POST "https://${{ secrets.SHOP_DOMAIN }}/_deploy/hooks/deploy" \
+            -H "Content-Type: application/json" \
+            -H "X-Hub-Signature-256: sha256=${SIGNATURE}" \
+            -d "$PAYLOAD"

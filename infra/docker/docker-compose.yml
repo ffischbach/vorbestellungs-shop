@@ -1,0 +1,87 @@
+services:
+  app:
+    image: ghcr.io/ffischbach/vorbestellungs-shop:${VERSION:-latest}
+    env_file: /opt/shop/.env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shop
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - /mnt/shop-data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shop"]
+      interval: 10s
+      retries: 5
+    secrets:
+      - db_password
+
+  caddy:
+    image: caddy:2-alpine
+    env_file: /opt/shop/.env
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+  webhook:
+    image: almir/webhook:latest
+    restart: unless-stopped
+    command: ["-hooks", "/config/hooks.json", "-verbose"]
+    volumes:
+      - ./webhook/hooks.json:/config/hooks.json:ro
+      - ./webhook/deploy.sh:/scripts/deploy.sh:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker:ro
+      - /opt/shop:/opt/shop:ro
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    restart: unless-stopped
+    command:
+      - --path.rootfs=/host
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|run)($|/)
+    network_mode: host
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+
+  promtail:
+    image: grafana/promtail:3
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - ./promtail/config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /tmp/promtail-positions:/tmp
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+secrets:
+  db_password:
+    file: /opt/shop/secrets/db_password
