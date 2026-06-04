@@ -1,0 +1,33 @@
+{
+  "name": "vorbestellungsshop",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "db:migrate": "pnpm --filter @repo/database migrate",
+    "db:migrate:dev": "pnpm --filter @repo/database migrate:dev",
+    "db:seed": "pnpm --filter @repo/database seed",
+    "db:studio": "pnpm --filter @repo/database studio",
+    "db:reset": "pnpm --filter @repo/database reset",
+    "email:dev": "pnpm --filter @repo/email dev",
+    "admin:create": "pnpm --filter @repo/web admin:create"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2",
+    "prettier": "^3.4.2"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+
+# Turbo
+.turbo/
+
+# Prisma
+packages/database/src/generated/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+coverage/
+playwright-report/
+test-results/
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfvars
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+
+# Ansible — instanzspezifische Konfiguration
+infra/ansible/group_vars/all/vars.yml
+infra/ansible/group_vars/all/vault.yml
+
+# Misc
+*.tsbuildinfo
