@@ -1,4 +1,9 @@
 import type { ReactNode } from 'react'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
+import { db } from '@repo/database'
+import { auth } from '@/lib/auth'
 import { logoutAction } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 
@@ -10,16 +15,26 @@ const navLinks = [
   { href: '/admin/orders', label: 'Bestellungen' },
 ]
 
-export default function AuthenticatedAdminLayout({ children }: { children: ReactNode }) {
+export default async function AuthenticatedAdminLayout({ children }: { children: ReactNode }) {
+  if (process.env.NODE_ENV === 'production') {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (session?.user) {
+      const user = await db.user.findUnique({
+        where: { id: session.user.id },
+        select: { twoFactorEnabled: true },
+      })
+      if (user && !user.twoFactorEnabled) redirect('/admin/setup-totp')
+    }
+  }
   return (
     <div className="flex min-h-screen">
       <aside className="w-56 border-r bg-muted/40 px-4 py-6 flex flex-col gap-2">
         <p className="text-xs font-semibold uppercase text-muted-foreground mb-2">Admin</p>
         <nav className="flex flex-col gap-1 text-sm flex-1">
           {navLinks.map((link) => (
-            <a key={link.href} href={link.href} className="hover:underline py-1">
+            <Link key={link.href} href={link.href} className="hover:underline py-1">
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
         <form action={logoutAction}>

@@ -3,8 +3,10 @@ import { NextRequest, NextResponse } from 'next/server'
 // Cookie-Name, den Better Auth standardmäßig setzt
 const SESSION_COOKIE = 'better-auth.session_token'
 
+const PUBLIC_ADMIN_PATHS = ['/admin/login', '/admin/setup', '/admin/login/totp']
+
 export function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname === '/admin/login') {
+  if (PUBLIC_ADMIN_PATHS.some((p) => request.nextUrl.pathname.startsWith(p))) {
     return NextResponse.next()
   }
 
