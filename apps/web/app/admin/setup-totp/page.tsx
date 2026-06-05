@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
 import { db } from '@repo/database'
-import { auth } from '@/lib/auth'
+import { getSessionFromCookie } from '@/lib/session'
 import clubConfig from '@/club.config'
 import { TotpSetupForm } from './totp-setup-form'
 
@@ -10,7 +9,7 @@ export const dynamic = 'force-dynamic'
 export default async function SetupTotpPage() {
   if (process.env.NODE_ENV !== 'production') redirect('/admin')
 
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getSessionFromCookie()
   if (!session?.user) redirect('/admin/login')
 
   const user = await db.user.findUnique({

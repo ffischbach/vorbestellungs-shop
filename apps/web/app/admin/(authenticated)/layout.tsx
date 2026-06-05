@@ -1,9 +1,7 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
-import { db } from '@repo/database'
-import { auth } from '@/lib/auth'
+import { getSessionFromCookie } from '@/lib/session'
 import { logoutAction } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 
@@ -17,13 +15,9 @@ const navLinks = [
 
 export default async function AuthenticatedAdminLayout({ children }: { children: ReactNode }) {
   if (process.env.NODE_ENV === 'production') {
-    const session = await auth.api.getSession({ headers: await headers() })
+    const session = await getSessionFromCookie()
     if (session?.user) {
-      const user = await db.user.findUnique({
-        where: { id: session.user.id },
-        select: { twoFactorEnabled: true },
-      })
-      if (user && !user.twoFactorEnabled) redirect('/admin/setup-totp')
+      if (!session.user.twoFactorEnabled) redirect('/admin/setup-totp')
     }
   }
   return (
