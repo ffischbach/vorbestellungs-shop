@@ -19,7 +19,7 @@ services:
         max-file: "3"
 
   db:
-    image: postgres:16-alpine
+    image: postgres:16.9-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: shop
@@ -48,14 +48,14 @@ services:
       - caddy_config:/config
 
   webhook:
-    image: almir/webhook:latest
+    build: ./webhook
     restart: unless-stopped
     command: ["-hooks", "/config/hooks.json", "-verbose"]
     volumes:
       - ./webhook/hooks.json:/config/hooks.json:ro
       - ./webhook/deploy.sh:/scripts/deploy.sh:ro
       - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/bin/docker:/usr/bin/docker:ro
+      - /home/shop/.docker/config.json:/root/.docker/config.json:ro
       - /opt/shop:/opt/shop:ro
 
   node-exporter:
