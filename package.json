@@ -1,10 +1,10 @@
 {
   "name": "vorbestellungsshop",
   "private": true,
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@11.5.2+sha512.71c631e382066efc25625d5cf029075de07b61b37f6e27350fbd84b1bda5864c8c1967adc280776b45c30a715c0359a3be08fef42d5bb09e2b99029979692916",
   "engines": {
     "node": ">=20",
-    "pnpm": ">=9"
+    "pnpm": ">=11"
   },
   "scripts": {
     "build": "turbo run build",
@@ -29,10 +29,5 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "pnpm": {
-    "patchedDependencies": {
-      "kysely@0.29.2": "patches/kysely@0.29.2.patch"
-    }
-  }
+  ]
 }

@@ -1,11 +1,11 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+RUN corepack enable && corepack prepare pnpm@11.5.2 --activate
 
 # Prisma CLI global in Alpine installieren — alle deps (inkl. effect, @prisma/*) landen
 # unter /usr/local/lib/node_modules/ und musl-Binaries werden korrekt geladen
-FROM node:20-alpine AS prisma-installer
+FROM node:22-alpine AS prisma-installer
 COPY packages/database/package.json /tmp/db-pkg.json
 RUN PRISMA_VERSION=$(node -p "require('/tmp/db-pkg.json').devDependencies.prisma.replace(/[\\^~]/,'')") && \
     npm install -g prisma@${PRISMA_VERSION}
@@ -33,7 +33,7 @@ RUN pnpm --filter @repo/database generate
 RUN pnpm turbo run build --filter=@repo/web
 
 # Produktions-Image
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000

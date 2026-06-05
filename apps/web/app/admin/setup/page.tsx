@@ -3,6 +3,8 @@ import { db } from '@repo/database'
 import clubConfig from '@/club.config'
 import { SetupForm } from './setup-form'
 
+export const dynamic = 'force-dynamic'
+
 export default async function SetupPage() {
   const existing = await db.user.count()
   if (existing > 0) redirect('/admin')

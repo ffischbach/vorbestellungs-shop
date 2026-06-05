@@ -5,6 +5,8 @@ import { auth } from '@/lib/auth'
 import clubConfig from '@/club.config'
 import { TotpSetupForm } from './totp-setup-form'
 
+export const dynamic = 'force-dynamic'
+
 export default async function SetupTotpPage() {
   if (process.env.NODE_ENV !== 'production') redirect('/admin')
 
