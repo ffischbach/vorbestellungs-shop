@@ -11,9 +11,7 @@ export const auth = betterAuth({
     // ADMIN_SIGNUP_ENABLED=true temporär setzen, um den ersten Account anzulegen.
     disableSignUp: process.env.NODE_ENV === 'production' && process.env.ADMIN_SIGNUP_ENABLED !== 'true',
   },
-  plugins: [
-    ...(process.env.NODE_ENV === 'production' ? [twoFactor()] : []),
-  ],
+  plugins: [twoFactor()],
   trustedOrigins: [process.env.BETTER_AUTH_URL ?? 'http://localhost:3000'],
 })
 

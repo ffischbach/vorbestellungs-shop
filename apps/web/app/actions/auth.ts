@@ -78,8 +78,8 @@ export async function loginAction(
       asResponse: true,
       headers: await headers(),
     })
-  } catch (err) {
-    authLogger.error({ err }, 'login_error')
+  } catch (err: any) {
+    authLogger.error({ errStatus: err?.status ?? 'unknown', errMessage: err?.message ?? String(err) }, 'login_error')
     return { error: 'Verbindungsfehler. Bitte versuche es erneut.' }
   }
 
@@ -93,14 +93,18 @@ export async function loginAction(
   if (data.twoFactorRedirect) {
     authLogger.info('login_success_2fa_pending')
 
-    // 2FA-Cookie aus der Antwort an den Browser weitergeben
-    const setCookieHeader = response.headers.get('set-cookie') ?? ''
-    const twoFaCookiePart = setCookieHeader
-      .split(',')
-      .find((c) => c.includes('two_factor') || c.includes('two-factor'))
+    // 2FA-Pending-Cookie aus der Antwort an den Browser weitergeben.
+    // getSetCookie() gibt ein string[] zurück (ein Eintrag pro Cookie) und
+    // vermeidet das Problem mit Kommas in Expires-Werten beim split(',').
+    const setCookies = response.headers.getSetCookie?.() ??
+      response.headers.get('set-cookie')?.split(/,\s*(?=[a-zA-Z0-9_-]+=)/) ?? []
 
-    if (twoFaCookiePart) {
-      const [nameValue] = twoFaCookiePart.trim().split(';')
+    const twoFaCookieStr = setCookies.find(
+      (c) => c.includes('two_factor') || c.includes('two-factor'),
+    )
+
+    if (twoFaCookieStr) {
+      const [nameValue] = twoFaCookieStr.trim().split(';')
       const eqIdx = nameValue.indexOf('=')
       if (eqIdx !== -1) {
         const name = nameValue.slice(0, eqIdx).trim()
@@ -153,20 +157,15 @@ export async function verifyTotpLoginAction(
     return rateLimitError
   }
 
-  const cookieStore = await cookies()
-  const allCookies = cookieStore.getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join('; ')
-
   let response: Response
   try {
     response = await auth.api.verifyTOTP({
       body: { code },
-      headers: new Headers({ cookie: allCookies }),
+      headers: await headers(),
       asResponse: true,
     })
-  } catch (err) {
-    authLogger.error({ err }, 'totp_login_error')
+  } catch (err: any) {
+    authLogger.error({ errStatus: err?.status ?? 'unknown', errMessage: err?.message ?? String(err) }, 'totp_login_error')
     return { error: 'Ungültiger Code.' }
   }
 
@@ -182,7 +181,7 @@ export async function verifyTotpLoginAction(
   }
 
   authLogger.info('totp_login_success')
-  cookieStore.set(SESSION_COOKIE, data.token, sessionCookieOptions)
+  ;(await cookies()).set(SESSION_COOKIE, data.token, sessionCookieOptions)
   redirect('/admin')
 }
 
@@ -245,21 +244,16 @@ export async function initiateTotpSetupAction(
 
   if (!password) return { error: 'Passwort ist Pflicht.' }
 
-  const cookieStore = await cookies()
-  const sessionToken = cookieStore.get(SESSION_COOKIE)?.value
-  if (!sessionToken) {
-    authLogger.warn('totp_setup_no_session')
-    return { error: 'Nicht angemeldet.' }
-  }
-
   let result: { totpURI: string; backupCodes: string[] }
   try {
     result = await auth.api.enableTwoFactor({
       body: { password },
-      headers: new Headers({ cookie: `${SESSION_COOKIE}=${sessionToken}` }),
+      headers: await headers(),
     }) as { totpURI: string; backupCodes: string[] }
-  } catch (err) {
-    authLogger.error({ err }, 'totp_setup_initiate_error')
+  } catch (err: any) {
+    const status = err?.status ?? err?.statusCode ?? 'unknown'
+    const message = err?.message ?? String(err)
+    authLogger.error({ errStatus: status, errMessage: message }, 'totp_setup_initiate_error')
     return { error: 'Passwort falsch oder 2FA konnte nicht aktiviert werden.' }
   }
 
@@ -282,16 +276,9 @@ export async function verifyTotpSetupAction(
 
   if (!code) return { error: 'Bitte Code eingeben.' }
 
-  const cookieStore = await cookies()
-  const sessionToken = cookieStore.get(SESSION_COOKIE)?.value
-  if (!sessionToken) {
-    authLogger.warn('totp_setup_verify_no_session')
-    return { error: 'Nicht angemeldet.' }
-  }
+  const requestHeaders = await headers()
 
-  const session = await auth.api.getSession({
-    headers: new Headers({ cookie: `${SESSION_COOKIE}=${sessionToken}` }),
-  })
+  const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session?.user) {
     authLogger.warn('totp_setup_verify_session_expired')
     return { error: 'Sitzung abgelaufen.' }
@@ -301,11 +288,13 @@ export async function verifyTotpSetupAction(
   try {
     response = await auth.api.verifyTOTP({
       body: { code },
-      headers: new Headers({ cookie: `${SESSION_COOKIE}=${sessionToken}` }),
+      headers: requestHeaders,
       asResponse: true,
     })
-  } catch (err) {
-    authLogger.error({ err }, 'totp_setup_verify_error')
+  } catch (err: any) {
+    const status = err?.status ?? err?.statusCode ?? 'unknown'
+    const message = err?.message ?? String(err)
+    authLogger.error({ errStatus: status, errMessage: message }, 'totp_setup_verify_error')
     return { error: 'Ungültiger Code.' }
   }
 
@@ -314,15 +303,11 @@ export async function verifyTotpSetupAction(
     return { error: 'Ungültiger Code. Bitte erneut versuchen.' }
   }
 
-  // verifyTOTP rotiert die Session (altes Token gelöscht, neues in DB) — neues Token holen
-  const newSession = await db.session.findFirst({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: 'desc' },
-    select: { token: true },
-  })
-
-  if (newSession) {
-    cookieStore.set(SESSION_COOKIE, newSession.token, sessionCookieOptions)
+  // Wenn verifyTOTP ein neues Session-Token zurückgibt (Session-Rotation nach Setup),
+  // Cookie aktualisieren — andernfalls bleibt das bestehende Cookie gültig.
+  const data = await response.json() as { token?: string }
+  if (data?.token) {
+    ;(await cookies()).set(SESSION_COOKIE, data.token, sessionCookieOptions)
   }
 
   authLogger.info({ userId: session.user.id }, 'totp_setup_verify_success')
