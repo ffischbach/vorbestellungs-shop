@@ -1,0 +1,27 @@
+# Docker CE ist via cloud-init bereits installiert.
+# Diese Role konfiguriert Log-Rotation und installiert das Loki-Plugin.
+
+- name: Docker Log-Rotation konfigurieren
+  copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      }
+  notify: docker neu starten
+
+- name: Loki Docker Logging Plugin installieren
+  command: docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+  args:
+    creates: /var/lib/docker/plugins  # Idempotenz-Guard
+  ignore_errors: true  # Schlägt fehl wenn Plugin bereits installiert ist
+
+- name: Deploy-User zur docker-Gruppe hinzufügen
+  user:
+    name: "{{ deploy_user }}"
+    groups: docker
+    append: true

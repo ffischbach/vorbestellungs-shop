@@ -1,0 +1,18 @@
+---
+# Einmaliges vollständiges Setup nach terraform apply.
+#
+# ansible-playbook \
+#   -i "$(cd ../terraform && terraform output -raw server_ip)," \
+#   --ask-vault-pass \
+#   playbooks/setup.yml
+
+- name: Server Setup
+  hosts: all
+  become: true
+  vars_files:
+    - ../group_vars/all/vars.yml
+    - ../group_vars/all/vault.yml
+  roles:
+    - harden
+    - docker
+    - app

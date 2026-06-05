@@ -1,0 +1,51 @@
+services:
+  grafana:
+    image: grafana/grafana:11.6
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_SMTP_ENABLED: "true"
+      GF_SMTP_HOST: ${SMTP_HOST}:${SMTP_PORT}
+      GF_SMTP_USER: ${SMTP_USER}
+      GF_SMTP_PASSWORD: ${SMTP_PASSWORD}
+      GF_SMTP_FROM_ADDRESS: ${SMTP_FROM}
+      GF_SMTP_FROM_NAME: "Shop Monitoring"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+
+  loki:
+    image: grafana/loki:3
+    restart: unless-stopped
+    command: -config.file=/etc/loki/config.yml
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml:ro
+      - loki_data:/loki
+    ports:
+      - "3100:3100"
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=30d
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/blackbox.yml:/etc/prometheus/blackbox.yml:ro
+      - prometheus_data:/prometheus
+
+  blackbox:
+    image: prom/blackbox-exporter:latest
+    restart: unless-stopped
+    command: --config.file=/etc/blackbox/blackbox.yml
+    volumes:
+      - ./prometheus/blackbox.yml:/etc/blackbox/blackbox.yml:ro
+
+volumes:
+  grafana_data:
+  loki_data:
+  prometheus_data:

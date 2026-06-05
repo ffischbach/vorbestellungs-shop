@@ -1,0 +1,102 @@
+- name: App-Verzeichnis anlegen
+  file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: "{{ deploy_user }}"
+    mode: '0750'
+
+- name: Secrets-Verzeichnis anlegen
+  file:
+    path: "{{ app_dir }}/secrets"
+    state: directory
+    owner: "{{ deploy_user }}"
+    mode: '0700'
+
+- name: DB-Passwort als Secret-Datei hinterlegen
+  copy:
+    content: "{{ vault_db_password }}"
+    dest: "{{ app_dir }}/secrets/db_password"
+    owner: "{{ deploy_user }}"
+    mode: '0600'
+
+- name: .env schreiben
+  template:
+    src: env.j2
+    dest: "{{ app_dir }}/.env"
+    owner: "{{ deploy_user }}"
+    mode: '0600'
+
+- name: docker-compose.yml deployen
+  copy:
+    src: "{{ playbook_dir }}/../../docker/docker-compose.yml"
+    dest: "{{ app_dir }}/docker-compose.yml"
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Caddyfile deployen
+  copy:
+    src: "{{ playbook_dir }}/../../docker/Caddyfile"
+    dest: "{{ app_dir }}/Caddyfile"
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Webhook-Verzeichnis anlegen
+  file:
+    path: "{{ app_dir }}/webhook"
+    state: directory
+    owner: "{{ deploy_user }}"
+    mode: '0750'
+
+- name: hooks.json deployen
+  template:
+    src: hooks.json.j2
+    dest: "{{ app_dir }}/webhook/hooks.json"
+    owner: "{{ deploy_user }}"
+    mode: '0600'
+
+- name: deploy.sh deployen
+  copy:
+    src: "{{ playbook_dir }}/../../docker/webhook/deploy.sh"
+    dest: "{{ app_dir }}/webhook/deploy.sh"
+    owner: "{{ deploy_user }}"
+    mode: '0755'
+
+- name: Webhook Dockerfile deployen
+  copy:
+    src: "{{ playbook_dir }}/../../docker/webhook/Dockerfile"
+    dest: "{{ app_dir }}/webhook/Dockerfile"
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Promtail-Verzeichnis anlegen
+  file:
+    path: "{{ app_dir }}/promtail"
+    state: directory
+    owner: "{{ deploy_user }}"
+    mode: '0750'
+
+- name: Promtail-Config aus Template deployen
+  template:
+    src: promtail.yml.j2
+    dest: "{{ app_dir }}/promtail/config.yml"
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Daten-Verzeichnis für PostgreSQL anlegen
+  file:
+    path: "{{ data_dir }}/postgres"
+    state: directory
+    owner: "70"
+    group: "70"
+    mode: '0700'
+
+- name: Bei GHCR einloggen
+  become_user: "{{ deploy_user }}"
+  command: docker login ghcr.io -u ffischbach -p {{ vault_ghcr_token }}
+  no_log: true
+
+- name: Stack starten
+  become_user: "{{ deploy_user }}"
+  command: docker compose -f {{ app_dir }}/docker-compose.yml up -d --build
+  args:
+    chdir: "{{ app_dir }}"

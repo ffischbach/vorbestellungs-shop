@@ -1,0 +1,13 @@
+# Wird von Ansible aus roles/monitoring/templates/contactpoints.yml.j2 generiert.
+
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: email
+    receivers:
+      - uid: email-receiver
+        type: email
+        settings:
+          addresses: ALERT_EMAIL
+          singleEmail: true

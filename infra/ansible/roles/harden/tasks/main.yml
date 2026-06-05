@@ -1,0 +1,71 @@
+- name: Deploy-User anlegen
+  user:
+    name: "{{ deploy_user }}"
+    shell: /bin/bash
+    groups: docker
+    append: true
+    create_home: true
+
+- name: SSH-Key für Deploy-User hinterlegen
+  authorized_key:
+    user: "{{ deploy_user }}"
+    key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+
+- name: Root-Login per SSH deaktivieren
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PermitRootLogin'
+    line: 'PermitRootLogin no'
+  notify: sshd neu starten
+
+- name: Passwort-Auth per SSH deaktivieren
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+  notify: sshd neu starten
+
+- name: fail2ban installieren
+  apt:
+    name: fail2ban
+    state: present
+    update_cache: true
+
+- name: fail2ban aktivieren
+  service:
+    name: fail2ban
+    state: started
+    enabled: true
+
+- name: unattended-upgrades installieren
+  apt:
+    name: unattended-upgrades
+    state: present
+
+- name: UFW installieren
+  apt:
+    name: ufw
+    state: present
+
+- name: UFW — SSH erlauben
+  ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+
+- name: UFW — HTTP erlauben
+  ufw:
+    rule: allow
+    port: '80'
+    proto: tcp
+
+- name: UFW — HTTPS erlauben
+  ufw:
+    rule: allow
+    port: '443'
+    proto: tcp
+
+- name: UFW aktivieren
+  ufw:
+    state: enabled
+    policy: deny

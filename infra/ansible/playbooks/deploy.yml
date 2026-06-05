@@ -1,0 +1,17 @@
+---
+# Config-Änderungen deployen (Env, Caddy, Compose).
+# Wird von GitHub Actions NICHT verwendet — dort läuft deploy.sh via Webhook.
+#
+# ansible-playbook \
+#   -i "$(cd ../terraform && terraform output -raw server_ip)," \
+#   --ask-vault-pass \
+#   playbooks/deploy.yml
+
+- name: Config-Update deployen
+  hosts: all
+  become: true
+  vars_files:
+    - ../group_vars/all/vars.yml
+    - ../group_vars/all/vault.yml
+  roles:
+    - app

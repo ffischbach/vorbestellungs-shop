@@ -1,0 +1,12 @@
+# Kopieren nach terraform.tfvars und Werte eintragen.
+# terraform.tfvars wird nicht committed (steht in .gitignore).
+
+hcloud_token       = "your-hetzner-cloud-api-token"
+dns_api_token      = "your-hetzner-dns-api-token"
+
+club_slug          = "asg-ettlingen"       # Nur a-z, 0-9 und -
+dns_zone_id        = "your-dns-zone-id"    # Hetzner DNS Console → Zone ID
+subdomain          = "shop"                # shop.<deine-domain>.de
+
+admin_ssh_key_name = "my-laptop"           # Name des Keys in Hetzner Cloud → SSH Keys
+admin_ips          = ["1.2.3.4/32"]        # Eigene IP(s) für SSH-Zugang

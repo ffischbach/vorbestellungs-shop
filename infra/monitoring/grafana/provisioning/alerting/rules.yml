@@ -1,0 +1,96 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: shop
+    folder: Shop
+    interval: 1m
+    rules:
+      - uid: app-down
+        title: App nicht erreichbar
+        condition: threshold
+        for: 2m
+        annotations:
+          summary: "{{ $labels.instance }} antwortet nicht"
+        labels:
+          severity: critical
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: probe_success{job="blackbox"} == 0
+          - refId: threshold
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              type: threshold
+              conditions:
+                - evaluator: { params: [0], type: gt }
+                  query: { params: [A] }
+
+      - uid: disk-full
+        title: Disk-Auslastung hoch
+        condition: threshold
+        for: 5m
+        annotations:
+          summary: "Disk auf {{ $labels.instance }} zu {{ $value | humanizePercentage }} belegt"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: |
+                1 - (node_filesystem_avail_bytes{mountpoint="/",fstype!="tmpfs"}
+                  / node_filesystem_size_bytes{mountpoint="/",fstype!="tmpfs"})
+          - refId: threshold
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              type: threshold
+              conditions:
+                - evaluator: { params: [0.8], type: gt }
+                  query: { params: [A] }
+
+      - uid: high-error-rate
+        title: Hohe Fehlerrate
+        condition: threshold
+        for: 5m
+        annotations:
+          summary: "Mehr als 10% 5xx-Antworten in den letzten 5 Minuten"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: loki
+            model:
+              expr: |
+                sum(rate({container="shop-app-1"} | json | status >= 500 [5m]))
+                / sum(rate({container="shop-app-1"} | json [5m])) > 0.1
+          - refId: threshold
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              type: threshold
+              conditions:
+                - evaluator: { params: [0], type: gt }
+                  query: { params: [A] }
+
+policies:
+  - orgId: 1
+    receiver: email

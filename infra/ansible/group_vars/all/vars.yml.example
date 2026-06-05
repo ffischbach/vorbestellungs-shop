@@ -1,0 +1,16 @@
+deploy_user: shop
+app_dir: /opt/shop
+data_dir: /mnt/shop-data
+
+# Hier eintragen (nicht sensitive)
+shop_domain: "shop.example.de"
+smtp_host: "smtp.example.de"
+smtp_port: "465"
+smtp_secure: "true"
+smtp_user: "shop@example.de"
+smtp_from: "shop@example.de"
+
+# Monitoring — IPs nach terraform apply eintragen
+app_server_ip: ""        # terraform output server_ip
+monitoring_server_ip: "" # terraform output monitoring_ip
+alert_email: "admin@example.de"

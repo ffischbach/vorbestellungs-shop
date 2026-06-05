@@ -1,0 +1,32 @@
+# Wird von Ansible aus dem Template roles/monitoring/templates/prometheus.yml.j2 generiert.
+# Diese Datei ist nur zur Dokumentation — nicht direkt verwenden.
+#
+# Variablen die Ansible ersetzt:
+#   {{ app_server_ip }}  — IP des App-Servers
+#   {{ shop_domain }}    — Domain des Shops
+
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  - job_name: node
+    static_configs:
+      - targets: ["APP_SERVER_IP:9100"]
+        labels:
+          instance: shop
+
+  - job_name: blackbox
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://SHOP_DOMAIN/api/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115

@@ -1,0 +1,19 @@
+---
+# Monitoring-Server einrichten — nach setup.yml für den App-Server ausführen.
+# Benötigt app_server_ip und monitoring_server_ip in group_vars/all/vars.yml.
+#
+# ansible-playbook \
+#   -i "$(cd ../terraform && terraform output -raw monitoring_ip)," \
+#   --ask-vault-pass \
+#   playbooks/setup-monitoring.yml
+
+- name: Monitoring-Server Setup
+  hosts: all
+  become: true
+  vars_files:
+    - ../group_vars/all/vars.yml
+    - ../group_vars/all/vault.yml
+  roles:
+    - harden
+    - docker
+    - monitoring

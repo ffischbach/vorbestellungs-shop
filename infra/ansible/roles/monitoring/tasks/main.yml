@@ -1,0 +1,93 @@
+- name: Monitoring-Verzeichnis anlegen
+  file:
+    path: /opt/monitoring
+    state: directory
+    owner: "{{ deploy_user }}"
+    mode: '0750'
+
+- name: Unterverzeichnisse anlegen
+  file:
+    path: "/opt/monitoring/{{ item }}"
+    state: directory
+    owner: "{{ deploy_user }}"
+    mode: '0750'
+  loop:
+    - prometheus
+    - loki
+    - grafana/provisioning/datasources
+    - grafana/provisioning/alerting
+
+- name: docker-compose.yml deployen
+  copy:
+    src: "{{ playbook_dir }}/../../monitoring/docker-compose.yml"
+    dest: /opt/monitoring/docker-compose.yml
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Loki-Config deployen
+  copy:
+    src: "{{ playbook_dir }}/../../monitoring/loki/config.yml"
+    dest: /opt/monitoring/loki/config.yml
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Blackbox-Config deployen
+  copy:
+    src: "{{ playbook_dir }}/../../monitoring/prometheus/blackbox.yml"
+    dest: /opt/monitoring/prometheus/blackbox.yml
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Prometheus-Config aus Template deployen
+  template:
+    src: prometheus.yml.j2
+    dest: /opt/monitoring/prometheus/prometheus.yml
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Grafana Datasources deployen
+  copy:
+    src: "{{ playbook_dir }}/../../monitoring/grafana/provisioning/datasources/datasources.yml"
+    dest: /opt/monitoring/grafana/provisioning/datasources/datasources.yml
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Grafana Alert-Rules deployen
+  copy:
+    src: "{{ playbook_dir }}/../../monitoring/grafana/provisioning/alerting/rules.yml"
+    dest: /opt/monitoring/grafana/provisioning/alerting/rules.yml
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Grafana Contact-Point aus Template deployen
+  template:
+    src: contactpoints.yml.j2
+    dest: /opt/monitoring/grafana/provisioning/alerting/contactpoints.yml
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: .env für Monitoring schreiben
+  template:
+    src: monitoring-env.j2
+    dest: /opt/monitoring/.env
+    owner: "{{ deploy_user }}"
+    mode: '0600'
+
+- name: UFW — Grafana (Port 3000) erlauben
+  ufw:
+    rule: allow
+    port: '3000'
+    proto: tcp
+
+- name: UFW — Loki (Port 3100) nur aus privatem Netz erlauben
+  ufw:
+    rule: allow
+    port: '3100'
+    proto: tcp
+    src: '10.0.0.0/24'
+
+- name: Monitoring-Stack starten
+  become_user: "{{ deploy_user }}"
+  command: docker compose -f /opt/monitoring/docker-compose.yml up -d
+  args:
+    chdir: /opt/monitoring
