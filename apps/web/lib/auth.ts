@@ -7,6 +7,9 @@ export const auth = betterAuth({
   database: prismaAdapter(db, { provider: 'postgresql' }),
   emailAndPassword: {
     enabled: true,
+    // Sign-up in production deaktiviert — nur via pnpm admin:create (programmatisch) oder
+    // ADMIN_SIGNUP_ENABLED=true temporär setzen, um den ersten Account anzulegen.
+    disableSignUp: process.env.NODE_ENV === 'production' && process.env.ADMIN_SIGNUP_ENABLED !== 'true',
   },
   plugins: [
     ...(process.env.NODE_ENV === 'production' ? [twoFactor()] : []),
