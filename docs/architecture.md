@@ -152,16 +152,13 @@ Middleware (middleware.ts)
 
 ### Admin-Account anlegen
 
-Sign-up ist nach dem ersten Setup zu deaktivieren (`disableSignUp: true` in `apps/web/lib/auth.ts`). Einen neuen Admin anlegen:
+Sign-up ist in Production standardmäßig deaktiviert (`disableSignUp` in `apps/web/lib/auth.ts`). Account-Erstellung über das mitgelieferte Script:
 
-1. Temporär `disableSignUp: false` setzen und deployen
-2. Account per API anlegen:
-   ```bash
-   curl -s -X POST https://<domain>/api/auth/sign-up/email \
-     -H "Content-Type: application/json" \
-     -d '{"email":"...", "name":"...", "password":"..."}'
-   ```
-3. Sofort wieder `disableSignUp: true` setzen und deployen
+```bash
+ADMIN_EMAIL=admin@meinverein.de ADMIN_PASSWORD=SICHERES_PASSWORT pnpm admin:create
+```
+
+Auf dem Server (Production) muss `ADMIN_SIGNUP_ENABLED=true` temporär gesetzt sein — siehe [Setup-Anleitung](setup.md#schritt-6--ersten-admin-account-anlegen).
 
 ### TOTP in Production
 

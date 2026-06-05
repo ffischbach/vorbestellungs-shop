@@ -21,19 +21,19 @@ Dieses Projekt ist als Companion zu [vorbestellungs-kasse](https://github.com/ff
 
 ## Tech Stack
 
-| Bereich | Technologie                         |
-|---|-------------------------------------|
+| Bereich | Technologie |
+|---|---|
 | Framework | Next.js 16 (App Router, TypeScript) |
-| Datenbank | PostgreSQL 16                       |
-| ORM | Prisma                              |
-| Styling | Tailwind CSS + shadcn/ui            |
-| E-Mail | React Email + Nodemailer (SMTP)     |
-| Auth | Better Auth + TOTP                  |
-| Reverse Proxy | Caddy                               |
-| Monorepo | Turborepo                           |
-| IaC | Terraform + Ansible                 |
-| CI/CD | GitHub Actions                      |
-| Monitoring | Grafana + Loki + Prometheus         |
+| Datenbank | PostgreSQL 16 |
+| ORM | Prisma |
+| Styling | Tailwind CSS + shadcn/ui |
+| E-Mail | React Email + Nodemailer (SMTP) |
+| Auth | Better Auth + TOTP |
+| Reverse Proxy | Caddy |
+| Monorepo | Turborepo |
+| IaC | Terraform + Ansible |
+| CI/CD | GitHub Actions |
+| Monitoring | Grafana + Loki + Prometheus |
 
 ## Projektstruktur
 
@@ -53,20 +53,22 @@ vorbestellungsshop/
 ├── .github/
 │   └── workflows/            # CI/CD Pipelines
 └── docs/
-    ├── architecture.md
-    ├── infrastructure.md
-    ├── development.md
-    ├── deployment.md
-    └── decisions/            # Architecture Decision Records (ADRs)
+    ├── architecture.md       # Systemarchitektur & Designentscheidungen
+    ├── development.md        # Lokale Entwicklung
+    ├── setup.md              # Deployment & neuen Verein einrichten
+    ├── ADR-001-framework.md
+    ├── ADR-002-tenancy.md
+    └── ADR-003-validation.md
 ```
 
 ## Dokumentation
 
 - [Architektur](docs/architecture.md)
-- [Infrastruktur & IaC](docs/infrastructure.md)
 - [Lokale Entwicklung](docs/development.md)
-- [Deployment (neuer Verein)](docs/deployment.md)
-- [Architecture Decision Records](docs/decisions/)
+- [Setup & Deployment](docs/setup.md)
+- [ADR-001: Framework-Wahl](docs/ADR-001-framework.md)
+- [ADR-002: Single-Tenant](docs/ADR-002-tenancy.md)
+- [ADR-003: Validierung](docs/ADR-003-validation.md)
 
 ## Schnellstart (Entwicklung)
 
