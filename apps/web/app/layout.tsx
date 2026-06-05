@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import clubConfig from "@/club.config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,8 +25,12 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="de"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      style={{
+        ['--color-primary' as string]: clubConfig.primaryColor,
+        ['--color-accent' as string]: clubConfig.accentColor,
+      }}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
