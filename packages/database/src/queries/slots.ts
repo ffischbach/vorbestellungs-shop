@@ -2,7 +2,7 @@ import { db } from '../index'
 
 export async function getPickupSlots() {
   return db.pickupSlot.findMany({
-    include: { products: true, orders: true },
+    include: { products: true, _count: { select: { orders: true } } },
     orderBy: { startTime: 'asc' },
   })
 }
@@ -10,7 +10,7 @@ export async function getPickupSlots() {
 export async function getPickupSlotById(id: string) {
   return db.pickupSlot.findUnique({
     where: { id },
-    include: { products: true, orders: true },
+    include: { products: true, _count: { select: { orders: true } } },
   })
 }
 
