@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { getOrders } from '@repo/database'
 
 export async function GET(request: NextRequest) {
-  const secret = request.headers.get('x-export-secret')
+  const secret = request.headers.get('x-cron-secret')
   if (secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { getOrdersPendingReminder, markReminderSent } from '@repo/database'
 import { renderEmail } from '@repo/email'
 import { sendEmail } from '@/lib/email'
