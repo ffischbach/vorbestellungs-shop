@@ -100,6 +100,7 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
       }),
     },
     clubName: clubConfig.name,
+    contactEmail: clubConfig.contactEmail,
   })
 
   if (sessionId) {

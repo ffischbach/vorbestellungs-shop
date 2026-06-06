@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
         pickupSlot: { label: order.pickupSlot.label },
         clubName: clubConfig.name,
         eventDate: clubConfig.eventDate,
+        contactEmail: clubConfig.contactEmail,
       })
 
       const result = await sendEmail({

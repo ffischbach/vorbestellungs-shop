@@ -5,6 +5,7 @@ import {
   Heading,
   Hr,
   Html,
+  Link,
   Preview,
   Row,
   Section,
@@ -17,6 +18,7 @@ export type OrderReminderProps = {
   pickupSlot: { label: string }
   clubName: string
   eventDate: string
+  contactEmail: string
 }
 
 export function OrderReminder({
@@ -25,6 +27,7 @@ export function OrderReminder({
   pickupSlot,
   clubName,
   eventDate,
+  contactEmail,
 }: OrderReminderProps) {
   return (
     <Html lang="de">
@@ -34,8 +37,8 @@ export function OrderReminder({
       </Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>{clubName}</Heading>
-          <Heading as="h2" style={h2}>
+          <Text style={clubLabel}>{clubName}</Text>
+          <Heading as="h1" style={h1}>
             Erinnerung: Morgen ist es soweit!
           </Heading>
 
@@ -50,7 +53,7 @@ export function OrderReminder({
             <Text style={infoValue}>{pickupSlot.label}</Text>
           </Section>
 
-          <Heading as="h3" style={h3}>
+          <Heading as="h2" style={h2}>
             Deine Bestellung
           </Heading>
 
@@ -65,6 +68,16 @@ export function OrderReminder({
           <Hr style={hr} />
 
           <Text style={text}>Wir freuen uns auf deinen Besuch!</Text>
+
+          <Hr style={hr} />
+
+          <Text style={footer}>
+            Bei Fragen erreichst du uns unter{' '}
+            <Link href={`mailto:${contactEmail}`} style={footerLink}>
+              {contactEmail}
+            </Link>
+            .
+          </Text>
           <Text style={footer}>Dein {clubName}-Team</Text>
         </Container>
       </Body>
@@ -80,9 +93,9 @@ const container = {
   padding: '24px',
   borderRadius: '8px',
 }
-const h1 = { fontSize: '24px', color: '#1a56db', margin: '0 0 8px' }
-const h2 = { fontSize: '20px', color: '#111827', margin: '0 0 24px' }
-const h3 = { fontSize: '16px', color: '#111827', margin: '24px 0 8px' }
+const clubLabel = { fontSize: '13px', color: '#6b7280', margin: '0 0 4px', fontWeight: 'bold' as const }
+const h1 = { fontSize: '22px', color: '#111827', margin: '0 0 24px' }
+const h2 = { fontSize: '16px', color: '#111827', margin: '24px 0 8px' }
 const text = { fontSize: '15px', color: '#374151', lineHeight: '1.6' }
 const infoBox = {
   backgroundColor: '#f9fafb',
@@ -92,7 +105,8 @@ const infoBox = {
 }
 const infoLabel = { fontSize: '12px', color: '#6b7280', margin: '0 0 2px' }
 const infoValue = { fontSize: '15px', color: '#111827', margin: '0', fontWeight: 'bold' as const }
-const itemRow = { display: 'flex', justifyContent: 'space-between', padding: '4px 0' }
+const itemRow = { padding: '3px 0' }
 const itemName = { fontSize: '14px', color: '#374151', margin: '0' }
 const hr = { borderColor: '#e5e7eb', margin: '12px 0' }
-const footer = { fontSize: '13px', color: '#6b7280', marginTop: '24px' }
+const footer = { fontSize: '13px', color: '#6b7280', marginTop: '8px' }
+const footerLink = { color: '#6b7280' }

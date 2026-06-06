@@ -1,10 +1,13 @@
 import {
   Body,
+  Column,
   Container,
   Head,
   Heading,
   Hr,
   Html,
+  Img,
+  Link,
   Preview,
   Row,
   Section,
@@ -17,6 +20,8 @@ export type OrderConfirmationProps = {
   items: Array<{ name: string; quantity: number; price: number }>
   pickupSlot: { label: string; startTime: string; endTime: string }
   clubName: string
+  contactEmail: string
+  qrCodeDataUrl?: string
 }
 
 export function OrderConfirmation({
@@ -25,6 +30,8 @@ export function OrderConfirmation({
   items,
   pickupSlot,
   clubName,
+  contactEmail,
+  qrCodeDataUrl,
 }: OrderConfirmationProps) {
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
@@ -36,8 +43,8 @@ export function OrderConfirmation({
       </Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>{clubName}</Heading>
-          <Heading as="h2" style={h2}>
+          <Text style={clubLabel}>{clubName}</Text>
+          <Heading as="h1" style={h1}>
             Bestellbestätigung
           </Heading>
 
@@ -51,27 +58,35 @@ export function OrderConfirmation({
             <Text style={infoValue}>#{orderNumber}</Text>
           </Section>
 
-          <Heading as="h3" style={h3}>
+          <Heading as="h2" style={h2}>
             Deine Bestellung
           </Heading>
 
           {items.map((item, i) => (
             <Row key={i} style={itemRow}>
-              <Text style={itemName}>
-                {item.quantity}× {item.name}
-              </Text>
-              <Text style={itemPrice}>{(item.price * item.quantity).toFixed(2)} €</Text>
+              <Column>
+                <Text style={itemName}>
+                  {item.quantity}× {item.name}
+                </Text>
+              </Column>
+              <Column style={{ width: '100px', textAlign: 'right' }}>
+                <Text style={itemPrice}>{(item.price * item.quantity).toFixed(2)} €</Text>
+              </Column>
             </Row>
           ))}
 
           <Hr style={hr} />
 
           <Row style={itemRow}>
-            <Text style={{ ...itemName, fontWeight: 'bold' }}>Gesamt</Text>
-            <Text style={{ ...itemPrice, fontWeight: 'bold' }}>{total.toFixed(2)} €</Text>
+            <Column>
+              <Text style={totalLabel}>Gesamt</Text>
+            </Column>
+            <Column style={{ width: '100px', textAlign: 'right' }}>
+              <Text style={totalPrice}>{total.toFixed(2)} €</Text>
+            </Column>
           </Row>
 
-          <Heading as="h3" style={h3}>
+          <Heading as="h2" style={h2}>
             Abholung
           </Heading>
           <Section style={infoBox}>
@@ -79,8 +94,27 @@ export function OrderConfirmation({
             <Text style={infoValue}>{pickupSlot.label}</Text>
           </Section>
 
+          {qrCodeDataUrl && (
+            <Section style={qrSection}>
+              <Text style={qrLabel}>QR-Code für die Abholung</Text>
+              <Img
+                src={qrCodeDataUrl}
+                width={140}
+                height={140}
+                alt={`QR-Code Bestellung #${orderNumber}`}
+              />
+              <Text style={qrHint}>Zeige diesen Code beim Abholen vor — kein Ausdrucken nötig.</Text>
+            </Section>
+          )}
+
+          <Hr style={hr} />
+
           <Text style={footer}>
-            Bei Fragen erreichst du uns per E-Mail. Wir freuen uns auf deinen Besuch!
+            Bei Fragen erreichst du uns unter{' '}
+            <Link href={`mailto:${contactEmail}`} style={footerLink}>
+              {contactEmail}
+            </Link>
+            . Wir freuen uns auf deinen Besuch!
           </Text>
           <Text style={footer}>Dein {clubName}-Team</Text>
         </Container>
@@ -97,9 +131,9 @@ const container = {
   padding: '24px',
   borderRadius: '8px',
 }
-const h1 = { fontSize: '24px', color: '#1a56db', margin: '0 0 8px' }
-const h2 = { fontSize: '20px', color: '#111827', margin: '0 0 24px' }
-const h3 = { fontSize: '16px', color: '#111827', margin: '24px 0 8px' }
+const clubLabel = { fontSize: '13px', color: '#6b7280', margin: '0 0 4px', fontWeight: 'bold' as const }
+const h1 = { fontSize: '22px', color: '#111827', margin: '0 0 24px' }
+const h2 = { fontSize: '16px', color: '#111827', margin: '24px 0 8px' }
 const text = { fontSize: '15px', color: '#374151', lineHeight: '1.6' }
 const infoBox = {
   backgroundColor: '#f9fafb',
@@ -109,8 +143,14 @@ const infoBox = {
 }
 const infoLabel = { fontSize: '12px', color: '#6b7280', margin: '0 0 2px' }
 const infoValue = { fontSize: '15px', color: '#111827', margin: '0', fontWeight: 'bold' as const }
-const itemRow = { display: 'flex', justifyContent: 'space-between', padding: '4px 0' }
+const itemRow = { padding: '5px 0' }
 const itemName = { fontSize: '14px', color: '#374151', margin: '0' }
-const itemPrice = { fontSize: '14px', color: '#374151', margin: '0', textAlign: 'right' as const }
+const itemPrice = { fontSize: '14px', color: '#374151', margin: '0' }
+const totalLabel = { fontSize: '14px', color: '#111827', margin: '0', fontWeight: 'bold' as const }
+const totalPrice = { fontSize: '14px', color: '#111827', margin: '0', fontWeight: 'bold' as const }
 const hr = { borderColor: '#e5e7eb', margin: '12px 0' }
+const qrSection = { margin: '20px 0', textAlign: 'center' as const }
+const qrLabel = { fontSize: '13px', color: '#6b7280', margin: '0 0 10px', fontWeight: 'bold' as const }
+const qrHint = { fontSize: '12px', color: '#9ca3af', margin: '8px 0 0' }
 const footer = { fontSize: '13px', color: '#6b7280', marginTop: '24px' }
+const footerLink = { color: '#6b7280' }
