@@ -16,6 +16,7 @@ export interface CartItem {
   price: number
   quantity: number
   imageUrl?: string
+  allowedSlotIds: string[]
 }
 
 interface CartContextType {
@@ -26,12 +27,15 @@ interface CartContextType {
   clearCart: () => void
   totalItems: number
   totalAmount: number
+  selectedSlotId: string | undefined
+  setSelectedSlotId: (id: string | undefined) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const [selectedSlotId, setSelectedSlotId] = useState<string | undefined>()
 
   const addItem = useCallback((newItem: Omit<CartItem, 'id'>) => {
     setItems((currentItems) => {
@@ -94,6 +98,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         totalItems,
         totalAmount,
+        selectedSlotId,
+        setSelectedSlotId,
       }}
     >
       {children}

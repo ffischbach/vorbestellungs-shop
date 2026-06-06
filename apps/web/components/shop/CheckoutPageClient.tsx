@@ -21,9 +21,17 @@ export function CheckoutPageClient({
   logoUrl,
   slots,
 }: CheckoutPageClientProps) {
-  const { items, totalAmount, clearCart } = useCart()
+  const { items, totalAmount, clearCart, selectedSlotId, setSelectedSlotId } = useCart()
   const [step, setStep] = useState(1)
-  const [selectedSlotId, setSelectedSlotId] = useState<string>()
+
+  const availableSlots = slots.filter((slot) =>
+    items.every(
+      (item) => item.allowedSlotIds.length === 0 || item.allowedSlotIds.includes(slot.id)
+    )
+  )
+  const effectiveSlotId = availableSlots.some((s) => s.id === selectedSlotId)
+    ? selectedSlotId
+    : undefined
   const [formData, setFormData] = useState({ name: '', email: '' })
   const [confirmed, setConfirmed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -39,7 +47,7 @@ export function CheckoutPageClient({
     const result = await submitOrder({
       customerName: formData.name,
       email: formData.email,
-      pickupSlotId: selectedSlotId,
+      pickupSlotId: effectiveSlotId,
       items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
     })
 
@@ -118,7 +126,7 @@ export function CheckoutPageClient({
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Abholzeit</p>
                 <p className="text-lg font-bold text-foreground">
-                  {slots.find((s) => s.id === selectedSlotId)?.label}
+                  {slots.find((s) => s.id === effectiveSlotId)?.label}
                 </p>
               </div>
               <div>
@@ -175,14 +183,14 @@ export function CheckoutPageClient({
         {step === 1 && (
           <div className="space-y-6">
             <TimeSlotPicker
-              slots={slots}
-              selectedSlotId={selectedSlotId}
+              slots={availableSlots}
+              selectedSlotId={effectiveSlotId}
               onSelectSlot={setSelectedSlotId}
             />
 
             <button
-              onClick={() => selectedSlotId && setStep(2)}
-              disabled={!selectedSlotId}
+              onClick={() => effectiveSlotId && setStep(2)}
+              disabled={!effectiveSlotId}
               className="w-full h-14 bg-foreground text-background font-bold text-base hover:bg-foreground/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Weiter zu den Kontaktdaten

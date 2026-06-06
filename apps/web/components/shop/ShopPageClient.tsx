@@ -42,9 +42,8 @@ export function ShopPageClient({
   categories,
   products,
 }: ShopPageClientProps) {
-  const [selectedSlotId, setSelectedSlotId] = useState<string>()
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>()
-  const { addItem, totalItems, totalAmount } = useCart()
+  const { addItem, totalItems, totalAmount, selectedSlotId, setSelectedSlotId } = useCart()
 
   const slotFilteredProducts = selectedSlotId
     ? products.filter(
@@ -91,6 +90,7 @@ export function ShopPageClient({
       quantity: quantity,
       imageUrl: product.imageUrl ?? undefined,
       variantName: variantId,
+      allowedSlotIds: product.allowedSlotIds,
     })
   }
 
