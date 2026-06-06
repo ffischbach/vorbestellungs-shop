@@ -60,7 +60,7 @@ export function ShopLayout({
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto max-w-2xl px-5 py-8">
+      <main className={`flex-1 container mx-auto max-w-2xl px-5 py-8 ${cartItemCount > 0 ? 'pb-28' : ''}`}>
         {children}
       </main>
     </div>
