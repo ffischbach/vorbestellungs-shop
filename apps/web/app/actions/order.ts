@@ -6,6 +6,7 @@ import { evaluateRules } from '@/lib/validation/evaluate'
 import { renderEmail } from '@repo/email'
 import { sendEmail } from '@/lib/email'
 import { getClubConfig } from '@/club.config'
+import logger from '@/lib/logger'
 
 const orderInputSchema = z.object({
   customerName: z.string().min(1),
@@ -94,11 +95,14 @@ export async function submitOrder(input: unknown): Promise<SubmitOrderResult> {
     clubName: clubConfig.name,
   })
 
-  await sendEmail({
+  const emailResult = await sendEmail({
     to: email,
     subject: `Bestellbestätigung #${orderNumber} – ${clubConfig.name}`,
     html: emailHtml,
   })
+  if (!emailResult.success) {
+    logger.warn({ orderId: order.id, orderNumber }, 'Bestellung gespeichert, E-Mail-Versand fehlgeschlagen')
+  }
 
   return { success: true, orderId: order.id, orderNumber }
 }
