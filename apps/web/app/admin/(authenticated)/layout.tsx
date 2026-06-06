@@ -14,25 +14,24 @@ const navLinks = [
 ]
 
 export default async function AuthenticatedAdminLayout({ children }: { children: ReactNode }) {
-  if (process.env.NODE_ENV === 'production') {
-    const session = await getSessionFromCookie()
-    if (session?.user) {
-      if (!session.user.twoFactorEnabled) redirect('/admin/setup-totp')
-    }
+  const session = await getSessionFromCookie()
+  if (!session?.user) redirect('/admin/login')
+  if (process.env.NODE_ENV === 'production' && !session.user.twoFactorEnabled) {
+    redirect('/admin/setup-totp')
   }
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-56 border-r bg-muted/40 px-4 py-6 flex flex-col gap-2">
-        <p className="text-xs font-semibold uppercase text-muted-foreground mb-2">Admin</p>
-        <nav className="flex flex-col gap-1 text-sm flex-1">
+      <div className="flex min-h-screen">
+      <aside className="w-56 border-r bg-background px-5 py-6 flex flex-col gap-1">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Admin</p>
+        <nav className="flex flex-col gap-0.5 text-sm flex-1">
           {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:underline py-1">
+            <Link key={link.href} href={link.href} className="px-3 py-2 hover:bg-muted font-medium text-foreground transition-colors">
               {link.label}
             </Link>
           ))}
         </nav>
         <form action={logoutAction}>
-          <Button variant="ghost" size="sm" type="submit" className="w-full justify-start text-muted-foreground">
+          <Button variant="ghost" size="sm" type="submit" className="w-full justify-start text-muted-foreground hover:text-foreground">
             Abmelden
           </Button>
         </form>
