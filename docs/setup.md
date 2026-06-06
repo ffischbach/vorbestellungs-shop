@@ -34,6 +34,47 @@ cp infra/ansible/group_vars/all/vault.yml.example infra/ansible/group_vars/all/v
 ansible-vault encrypt infra/ansible/group_vars/all/vault.yml
 ```
 
+**Hetzner Object Storage einrichten:**
+
+Object Storage wird für Produktbilder und automatische Datenbank-Backups genutzt. Die gesamte Einrichtung erfolgt per AWS CLI (Hetzner Object Storage ist S3-kompatibel).
+
+1. Im [Hetzner Cloud Panel](https://console.hetzner.cloud) unter **Object Storage → Credentials** ein S3-Zugangspaar generieren.
+
+2. AWS CLI lokal konfigurieren:
+   ```bash
+   export AWS_ACCESS_KEY_ID="<Access Key>"
+   export AWS_SECRET_ACCESS_KEY="<Secret Key>"
+   export S3_ENDPOINT="https://fsn1.your-objectstorage.com"
+   export S3_BUCKET="shop-assets"
+   ```
+
+3. Bucket anlegen:
+   ```bash
+   aws s3 mb "s3://$S3_BUCKET" \
+     --endpoint-url "$S3_ENDPOINT" \
+     --region fsn1
+   ```
+
+   > Bucket-Policies werden von Hetzner Object Storage nicht unterstützt. Produktbilder werden beim Upload automatisch mit `ACL: public-read` hochgeladen — Backups bleiben ohne ACL (private).
+
+4. Werte in `vars.yml` eintragen:
+   ```yaml
+   s3_endpoint: "https://fsn1.your-objectstorage.com"
+   s3_region: "fsn1"
+   s3_bucket_name: "shop-assets"
+   s3_public_url: "https://shop-assets.fsn1.your-objectstorage.com"
+   ```
+
+6. Credentials in `vault.yml` eintragen:
+   ```yaml
+   vault_s3_access_key_id: "<Access Key>"
+   vault_s3_secret_access_key: "<Secret Key>"
+   ```
+
+> **Backups:** Der `backup`-Container läuft automatisch täglich um 02:00 Uhr, erstellt einen `pg_dump` und legt ihn unter `backups/backup_YYYY-MM-DD_*.sql.gz` ab. Backups älter als 30 Tage werden automatisch gelöscht.
+
+---
+
 **GitHub Secrets** setzen (Repository → Settings → Secrets):
 - `DEPLOY_WEBHOOK_SECRET` — gleicher Wert wie `vault_deploy_webhook_secret` in `vault.yml`
 - `SHOP_DOMAIN` — gleicher Wert wie `shop_domain` in `vars.yml`
@@ -153,6 +194,8 @@ Im Admin-Panel unter `https://shop.meinverein.de/admin`:
 - [ ] Test-Bestellung durchführen und Bestätigungs-E-Mail prüfen
 - [ ] Admin-TOTP aktiviert und getestet
 - [ ] CSV-Export heruntergeladen und Format geprüft
+- [ ] Testbild im Admin hochladen und prüfen ob es unter `https://<bucket>.fsn1.your-objectstorage.com/products/...` erreichbar ist
+- [ ] Ersten Backup manuell auslösen: `docker compose exec backup /backup.sh` und im S3-Bucket unter `backups/` prüfen
 
 ---
 
