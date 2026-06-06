@@ -64,8 +64,10 @@ function readCookie(name: string): string | undefined {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedSlotId, setSelectedSlotIdState] = useState<string | undefined>()
+  const [isLoading, setIsLoading] = useState(() => typeof window !== 'undefined')
+  const [selectedSlotId, setSelectedSlotIdState] = useState<string | undefined>(() =>
+    typeof window !== 'undefined' ? readCookie('cart_slot') : undefined
+  )
   const [sessionId] = useState(() => typeof window !== 'undefined' ? getOrCreateSessionId() : '')
 
   const sessionIdRef = useRef(sessionId)
@@ -76,13 +78,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!sessionId) {
-      setIsLoading(false)
       return
     }
     document.cookie = `cart_session=${sessionId}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`
-
-    const storedSlot = readCookie('cart_slot')
-    if (storedSlot) setSelectedSlotIdState(storedSlot)
 
     fetchCartItems(sessionId).then((result) => {
       if (result.success) {
