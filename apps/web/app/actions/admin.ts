@@ -17,8 +17,15 @@ import {
 import { deleteFile } from '@/lib/storage'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 
 export type ActionState = { error: string } | { success: true } | null
+
+async function requireAdmin() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  return session ?? null
+}
 
 // =============================================================================
 // Kategorien
@@ -28,6 +35,7 @@ export async function createCategoryAction(
   _: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
+  if (!(await requireAdmin())) return { error: 'Nicht authentifiziert.' }
   const name = formData.get('name')?.toString().trim()
   if (!name) return { error: 'Name ist Pflicht.' }
   try {
@@ -43,6 +51,7 @@ export async function updateCategoryAction(
   _: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
+  if (!(await requireAdmin())) return { error: 'Nicht authentifiziert.' }
   const id = formData.get('id')?.toString()
   const name = formData.get('name')?.toString().trim()
   if (!id || !name) return { error: 'Ungültige Eingabe.' }
@@ -56,6 +65,7 @@ export async function updateCategoryAction(
 }
 
 export async function deleteCategoryAction(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return
   const id = formData.get('id')?.toString()
   if (!id) return
   try {
@@ -74,6 +84,7 @@ export async function createSlotAction(
   _: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
+  if (!(await requireAdmin())) return { error: 'Nicht authentifiziert.' }
   const label = formData.get('label')?.toString().trim()
   const startTimeRaw = formData.get('startTime')?.toString()
   const endTimeRaw = formData.get('endTime')?.toString()
@@ -103,6 +114,7 @@ export async function updateSlotAction(
   _: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
+  if (!(await requireAdmin())) return { error: 'Nicht authentifiziert.' }
   const id = formData.get('id')?.toString()
   const label = formData.get('label')?.toString().trim()
   const startTimeRaw = formData.get('startTime')?.toString()
@@ -129,6 +141,7 @@ export async function updateSlotAction(
 }
 
 export async function deleteSlotAction(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return
   const id = formData.get('id')?.toString()
   if (!id) return
   try {
@@ -147,6 +160,7 @@ export async function createProductAction(
   _: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
+  if (!(await requireAdmin())) return { error: 'Nicht authentifiziert.' }
   const name = formData.get('name')?.toString().trim()
   const description = formData.get('description')?.toString().trim() || undefined
   const priceRaw = formData.get('price')?.toString()
@@ -184,6 +198,7 @@ export async function updateProductAction(
   _: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
+  if (!(await requireAdmin())) return { error: 'Nicht authentifiziert.' }
   const id = formData.get('id')?.toString()
   const name = formData.get('name')?.toString().trim()
   const description = formData.get('description')?.toString().trim() || undefined
@@ -219,6 +234,7 @@ export async function updateProductAction(
 }
 
 export async function toggleProductAvailabilityAction(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return
   const id = formData.get('id')?.toString()
   const available = formData.get('available') === 'true'
   if (!id) return
@@ -227,6 +243,7 @@ export async function toggleProductAvailabilityAction(formData: FormData): Promi
 }
 
 export async function deleteProductAction(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return
   const id = formData.get('id')?.toString()
   if (!id) return
   const product = await getProductById(id)
@@ -249,6 +266,7 @@ export async function updateClubConfigAction(
   _: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
+  if (!(await requireAdmin())) return { error: 'Nicht authentifiziert.' }
   const clubName = formData.get('clubName')?.toString().trim()
   const eventName = formData.get('eventName')?.toString().trim()
   const eventDate = formData.get('eventDate')?.toString().trim()
@@ -294,6 +312,7 @@ export async function updateClubConfigAction(
 // =============================================================================
 
 export async function updateOrderStatusAction(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return
   const id = formData.get('id')?.toString()
   const status = formData.get('status')?.toString()
   if (!id || !status) return
