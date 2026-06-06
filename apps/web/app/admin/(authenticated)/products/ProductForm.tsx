@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -93,15 +93,14 @@ function ProductFields({ categories, slots, defaults }: ProductFieldsProps) {
 
 export function CreateProductForm({ categories, slots }: { categories: Category[]; slots: Slot[] }) {
   const [state, action, isPending] = useActionState(createProductAction, null)
-  const [key, setKey] = useState(0)
+  const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
-    // eslint-disable-next-line react-compiler/react-compiler
-    if (state && 'success' in state) setKey((k) => k + 1)
+    if (state && 'success' in state) formRef.current?.reset()
   }, [state])
 
   return (
-    <form key={key} action={action} className="space-y-4">
+    <form ref={formRef} action={action} className="space-y-4">
       <ProductFields categories={categories} slots={slots} />
       {state && 'error' in state && (
         <p className="text-destructive text-sm">{state.error}</p>

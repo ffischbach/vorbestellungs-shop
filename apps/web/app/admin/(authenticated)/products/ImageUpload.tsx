@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { uploadImageAction, deleteImageAction } from '@/app/actions/upload'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -14,6 +14,17 @@ export function ImageUpload({ defaultImageUrl }: Props) {
   const [error, setError] = useState('')
   const [isPending, setIsPending] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const form = inputRef.current?.closest('form')
+    if (!form) return
+    const handleReset = () => {
+      setUrl('')
+      if (inputRef.current) inputRef.current.value = ''
+    }
+    form.addEventListener('reset', handleReset)
+    return () => form.removeEventListener('reset', handleReset)
+  }, [])
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]

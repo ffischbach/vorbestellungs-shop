@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,14 +8,14 @@ import { createCategoryAction, updateCategoryAction, type ActionState } from '@/
 
 export function CreateCategoryForm() {
   const [state, action, isPending] = useActionState(createCategoryAction, null)
-  const [key, setKey] = useState(0)
+  const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
-    if (state && 'success' in state) setKey((k) => k + 1)
+    if (state && 'success' in state) formRef.current?.reset()
   }, [state])
 
   return (
-    <form key={key} action={action} className="flex items-end gap-3">
+    <form ref={formRef} action={action} className="flex items-end gap-3">
       <div className="flex-1">
         <Label htmlFor="cat-name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
           Name
