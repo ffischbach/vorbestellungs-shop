@@ -90,7 +90,7 @@ export function ShopPageClient({
         {/* Hero Section */}
         <div className="animate-fade-in-up">
           <h1 className="text-3xl md:text-4xl text-foreground tracking-tight">
-            Bestelle für das
+            Bestelle für
             <br />
             <span className="text-muted-foreground">{eventName}</span>
           </h1>
