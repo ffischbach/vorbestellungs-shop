@@ -1,7 +1,14 @@
+import { redirect } from 'next/navigation'
+import { db } from '@repo/database'
 import { LoginForm } from './login-form'
-import clubConfig from '@/club.config'
+import { getClubConfig } from '@/club.config'
 
-export default function LoginPage() {
+export const dynamic = 'force-dynamic'
+
+export default async function LoginPage() {
+  const [userCount, clubConfig] = await Promise.all([db.user.count(), getClubConfig()])
+  if (userCount === 0) redirect('/admin/setup')
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
       <div className="w-full max-w-sm border bg-background p-8 space-y-6">

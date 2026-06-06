@@ -1,15 +1,57 @@
-import { getOrderStats, getOrders } from '@repo/database'
-import { getPickupSlots } from '@repo/database'
+import Link from 'next/link'
+import { getOrderStats, getOrders, getPickupSlots, getCategories, getProducts, getClubConfigFromDb } from '@repo/database'
 import { buildTimeSlots } from '@/lib/slots'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminDashboard() {
-  const [stats, slots, recentOrders] = await Promise.all([
+  const [stats, slots, recentOrders, categories, products, dbConfig] = await Promise.all([
     getOrderStats(),
     getPickupSlots(),
     getOrders(),
+    getCategories(),
+    getProducts(),
+    getClubConfigFromDb(),
   ])
 
   const timeSlots = buildTimeSlots(slots)
+
+  const s3PublicUrl = process.env.S3_PUBLIC_URL
+  const setupSteps = [
+    {
+      key: 'settings',
+      label: 'Vereinseinstellungen konfigurieren',
+      href: '/admin/settings',
+      done: dbConfig !== null,
+    },
+    ...(s3PublicUrl ? [{
+      key: 'logo',
+      label: 'Vereinslogo hochladen',
+      href: '/admin/settings',
+      done: Boolean(dbConfig?.logoUrl?.startsWith(s3PublicUrl)),
+    }] : []),
+    {
+      key: 'categories',
+      label: 'Mindestens eine Kategorie anlegen',
+      href: '/admin/categories',
+      done: categories.length > 0,
+    },
+    {
+      key: 'products',
+      label: 'Mindestens ein Produkt anlegen',
+      href: '/admin/products',
+      done: products.length > 0,
+    },
+    {
+      key: 'slots',
+      label: 'Mindestens einen Zeitslot anlegen',
+      href: '/admin/slots',
+      done: slots.length > 0,
+    },
+  ]
+
+  const allDone = setupSteps.every((s) => s.done)
+  const doneCount = setupSteps.filter((s) => s.done).length
 
   return (
     <div className="space-y-8">
@@ -17,6 +59,51 @@ export default async function AdminDashboard() {
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground text-sm mt-1">Übersicht aller Bestellungen</p>
       </div>
+
+      {/* Setup Checklist */}
+      {!allDone && (
+        <div className="border border-border bg-card">
+          <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+            <div>
+              <h2 className="font-bold text-sm">Ersteinrichtung</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {doneCount} von {setupSteps.length} Schritten abgeschlossen
+              </p>
+            </div>
+            <div className="flex gap-1">
+              {setupSteps.map((step) => (
+                <div
+                  key={step.key}
+                  className={`w-2 h-2 rounded-full ${step.done ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                />
+              ))}
+            </div>
+          </div>
+          <ul className="divide-y divide-border">
+            {setupSteps.map((step) => (
+              <li key={step.key}>
+                <Link
+                  href={step.href}
+                  className="flex items-center gap-3 px-5 py-3 hover:bg-muted/50 transition-colors"
+                >
+                  <span
+                    className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs
+                      ${step.done ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/40'}`}
+                  >
+                    {step.done ? '✓' : ''}
+                  </span>
+                  <span className={`text-sm ${step.done ? 'line-through text-muted-foreground' : 'font-medium'}`}>
+                    {step.label}
+                  </span>
+                  {!step.done && (
+                    <span className="ml-auto text-xs text-muted-foreground">→</span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
