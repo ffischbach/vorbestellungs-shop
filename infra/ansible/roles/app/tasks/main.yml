@@ -116,6 +116,12 @@
   command: docker login ghcr.io -u ffischbach -p {{ vault_ghcr_token }}
   no_log: true
 
+- name: Neuestes App-Image von GHCR ziehen
+  become_user: "{{ deploy_user }}"
+  command: docker compose -f {{ app_dir }}/docker-compose.yml pull app
+  args:
+    chdir: "{{ app_dir }}"
+
 - name: Stack starten
   become_user: "{{ deploy_user }}"
   command: docker compose -f {{ app_dir }}/docker-compose.yml up -d --build
