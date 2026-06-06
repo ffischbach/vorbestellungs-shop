@@ -11,7 +11,8 @@ function evaluate(rule: ValidationRule, context: OrderContext): ValidationResult
   switch (rule.type) {
     case 'pickup_slot_match': {
       const incompatible = context.items.filter(
-        (item) => !item.allowedSlotIds.includes(context.pickupSlotId)
+        (item) =>
+          item.allowedSlotIds.length > 0 && !item.allowedSlotIds.includes(context.pickupSlotId)
       )
       if (incompatible.length > 0) {
         return {
