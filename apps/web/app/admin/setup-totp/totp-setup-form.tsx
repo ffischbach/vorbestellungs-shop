@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import { initiateTotpSetupAction, verifyTotpSetupAction, type TotpSetupState } from '@/app/actions/auth'
+import { initiateTotpSetupAction, verifyTotpSetupAction } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'

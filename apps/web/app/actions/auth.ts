@@ -7,16 +7,6 @@ import { redirect } from 'next/navigation'
 import logger from '@/lib/logger'
 import { checkRateLimit } from '@/lib/rate-limit'
 
-const SESSION_COOKIE = 'better-auth.session_token'
-
-const sessionCookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge: 60 * 60 * 24 * 7,
-}
-
 async function getClientIp(): Promise<string> {
   const h = await headers()
   const forwarded = h.get('x-forwarded-for')
@@ -63,7 +53,6 @@ export async function loginAction(
     return { error: 'Bitte E-Mail und Passwort eingeben.' }
   }
 
-  // Rate Limit pro E-Mail + IP Kombination
   const rateLimitKey = `login:${email.toLowerCase()}:${ip}`
   const rateLimitError = assertRateLimit(rateLimitKey)
   if (rateLimitError) {
@@ -71,63 +60,30 @@ export async function loginAction(
     return rateLimitError
   }
 
-  let response: Response
+  let result: { twoFactorRedirect?: boolean } | null
   try {
-    response = await auth.api.signInEmail({
+    // nextCookies plugin automatically sets the signed session (or 2FA pending) cookie.
+    result = await auth.api.signInEmail({
       body: { email, password },
-      asResponse: true,
       headers: await headers(),
-    })
-  } catch (err: any) {
-    authLogger.error({ errStatus: err?.status ?? 'unknown', errMessage: err?.message ?? String(err) }, 'login_error')
+    }) as { twoFactorRedirect?: boolean } | null
+  } catch (err) {
+    const e = err as { status?: unknown; message?: string }
+    const status = e?.status ?? 'unknown'
+    if (status === 'UNAUTHORIZED' || status === 401) {
+      authLogger.warn({ status }, 'login_failure')
+      return { error: 'E-Mail oder Passwort falsch.' }
+    }
+    authLogger.error({ errStatus: status, errMessage: e?.message ?? String(err) }, 'login_error')
     return { error: 'Verbindungsfehler. Bitte versuche es erneut.' }
   }
 
-  if (!response.ok) {
-    authLogger.warn({ status: response.status }, 'login_failure')
-    return { error: 'E-Mail oder Passwort falsch.' }
-  }
-
-  const data = await response.json() as { token?: string; twoFactorRedirect?: boolean }
-
-  if (data.twoFactorRedirect) {
+  if (result?.twoFactorRedirect) {
     authLogger.info('login_success_2fa_pending')
-
-    // 2FA-Pending-Cookie aus der Antwort an den Browser weitergeben.
-    // getSetCookie() gibt ein string[] zurück (ein Eintrag pro Cookie) und
-    // vermeidet das Problem mit Kommas in Expires-Werten beim split(',').
-    const setCookies = response.headers.getSetCookie?.() ??
-      response.headers.get('set-cookie')?.split(/,\s*(?=[a-zA-Z0-9_-]+=)/) ?? []
-
-    const twoFaCookieStr = setCookies.find(
-      (c) => c.includes('two_factor') || c.includes('two-factor'),
-    )
-
-    if (twoFaCookieStr) {
-      const [nameValue] = twoFaCookieStr.trim().split(';')
-      const eqIdx = nameValue.indexOf('=')
-      if (eqIdx !== -1) {
-        const name = nameValue.slice(0, eqIdx).trim()
-        const value = nameValue.slice(eqIdx + 1).trim()
-        ;(await cookies()).set(name, value, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 600,
-        })
-      }
-    }
     redirect('/admin/login/totp')
   }
 
-  if (!data.token) {
-    authLogger.error('login_missing_token')
-    return { error: 'Anmeldung fehlgeschlagen.' }
-  }
-
   authLogger.info('login_success')
-  ;(await cookies()).set(SESSION_COOKIE, data.token, sessionCookieOptions)
   redirect('/admin')
 }
 
@@ -149,7 +105,6 @@ export async function verifyTotpLoginAction(
     return { error: 'Bitte Code eingeben.' }
   }
 
-  // Rate Limit pro IP
   const rateLimitKey = `totp:${ip}`
   const rateLimitError = assertRateLimit(rateLimitKey)
   if (rateLimitError) {
@@ -157,31 +112,19 @@ export async function verifyTotpLoginAction(
     return rateLimitError
   }
 
-  let response: Response
   try {
-    response = await auth.api.verifyTOTP({
+    // nextCookies plugin sets the signed session cookie on success.
+    await auth.api.verifyTOTP({
       body: { code },
       headers: await headers(),
-      asResponse: true,
     })
-  } catch (err: any) {
-    authLogger.error({ errStatus: err?.status ?? 'unknown', errMessage: err?.message ?? String(err) }, 'totp_login_error')
+  } catch (err) {
+    const e = err as { status?: unknown; message?: string }
+    authLogger.warn({ errStatus: e?.status ?? 'unknown' }, 'totp_login_failure')
     return { error: 'Ungültiger Code.' }
-  }
-
-  if (!response.ok) {
-    authLogger.warn({ status: response.status }, 'totp_login_failure')
-    return { error: 'Ungültiger Code.' }
-  }
-
-  const data = await response.json() as { token?: string }
-  if (!data.token) {
-    authLogger.error('totp_login_missing_token')
-    return { error: 'Anmeldung fehlgeschlagen.' }
   }
 
   authLogger.info('totp_login_success')
-  ;(await cookies()).set(SESSION_COOKIE, data.token, sessionCookieOptions)
   redirect('/admin')
 }
 
@@ -250,10 +193,12 @@ export async function initiateTotpSetupAction(
       body: { password },
       headers: await headers(),
     }) as { totpURI: string; backupCodes: string[] }
-  } catch (err: any) {
-    const status = err?.status ?? err?.statusCode ?? 'unknown'
-    const message = err?.message ?? String(err)
-    authLogger.error({ errStatus: status, errMessage: message }, 'totp_setup_initiate_error')
+  } catch (err) {
+    const e = err as { status?: unknown; statusCode?: unknown; message?: string }
+    authLogger.error(
+      { errStatus: e?.status ?? e?.statusCode ?? 'unknown', errMessage: e?.message ?? String(err) },
+      'totp_setup_initiate_error',
+    )
     return { error: 'Passwort falsch oder 2FA konnte nicht aktiviert werden.' }
   }
 
@@ -284,30 +229,19 @@ export async function verifyTotpSetupAction(
     return { error: 'Sitzung abgelaufen.' }
   }
 
-  let response: Response
   try {
-    response = await auth.api.verifyTOTP({
+    // nextCookies plugin rotates the signed session cookie on success.
+    await auth.api.verifyTOTP({
       body: { code },
       headers: requestHeaders,
-      asResponse: true,
     })
-  } catch (err: any) {
-    const status = err?.status ?? err?.statusCode ?? 'unknown'
-    const message = err?.message ?? String(err)
-    authLogger.error({ errStatus: status, errMessage: message }, 'totp_setup_verify_error')
+  } catch (err) {
+    const e = err as { status?: unknown; statusCode?: unknown; message?: string }
+    authLogger.error(
+      { errStatus: e?.status ?? e?.statusCode ?? 'unknown', errMessage: e?.message ?? String(err) },
+      'totp_setup_verify_error',
+    )
     return { error: 'Ungültiger Code.' }
-  }
-
-  if (!response.ok) {
-    authLogger.warn({ status: response.status }, 'totp_setup_verify_failure')
-    return { error: 'Ungültiger Code. Bitte erneut versuchen.' }
-  }
-
-  // Wenn verifyTOTP ein neues Session-Token zurückgibt (Session-Rotation nach Setup),
-  // Cookie aktualisieren — andernfalls bleibt das bestehende Cookie gültig.
-  const data = await response.json() as { token?: string }
-  if (data?.token) {
-    ;(await cookies()).set(SESSION_COOKIE, data.token, sessionCookieOptions)
   }
 
   authLogger.info({ userId: session.user.id }, 'totp_setup_verify_success')
@@ -323,28 +257,16 @@ export async function logoutAction(): Promise<void> {
   const ua = await getUserAgent()
   const authLogger = logger.child({ event: 'logout', ip, ua })
 
-  const cookieStore = await cookies()
-  const allCookies = cookieStore.getAll()
-  const sessionCookie = allCookies.find((c) => c.name.includes('session_token'))
-
-  if (sessionCookie) {
-    const headerValue = `${sessionCookie.name}=${sessionCookie.value}`
-    try {
-      // Better Auth signOut invalidiert die Session serverseitig
-      await auth.api.signOut({
-        headers: new Headers({ cookie: headerValue }),
-        asResponse: true,
-      })
-      authLogger.info('logout_success')
-    } catch (err) {
-      // Session war schon abgelaufen — trotzdem Cookie löschen
-      authLogger.warn({ err }, 'logout_session_already_expired')
-    }
-
-    // Cookie clientseitig löschen
-    cookieStore.delete(sessionCookie.name)
-  } else {
-    authLogger.warn('logout_no_session_cookie')
+  try {
+    // nextCookies plugin clears the session cookie via the signOut response headers.
+    await auth.api.signOut({ headers: await headers() })
+    authLogger.info('logout_success')
+  } catch (err) {
+    // Session already expired — clear the cookie manually as a fallback.
+    authLogger.warn({ err }, 'logout_session_already_expired')
+    const cookieStore = await cookies()
+    const sessionCookie = cookieStore.getAll().find((c) => c.name.includes('session_token'))
+    if (sessionCookie) cookieStore.delete(sessionCookie.name)
   }
 
   redirect('/admin/login')
