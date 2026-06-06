@@ -101,6 +101,7 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
     },
     clubName: clubConfig.name,
     contactEmail: clubConfig.contactEmail,
+    qrCodeUrl: `${process.env.BETTER_AUTH_URL}/api/qr?data=${encodeURIComponent(orderNumber)}`,
   })
 
   if (sessionId) {

@@ -21,7 +21,7 @@ export type OrderConfirmationProps = {
   pickupSlot: { label: string; startTime: string; endTime: string }
   clubName: string
   contactEmail: string
-  qrCodeDataUrl?: string
+  qrCodeUrl?: string
 }
 
 export function OrderConfirmation({
@@ -31,7 +31,7 @@ export function OrderConfirmation({
   pickupSlot,
   clubName,
   contactEmail,
-  qrCodeDataUrl,
+  qrCodeUrl,
 }: OrderConfirmationProps) {
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
@@ -94,11 +94,11 @@ export function OrderConfirmation({
             <Text style={infoValue}>{pickupSlot.label}</Text>
           </Section>
 
-          {qrCodeDataUrl && (
+          {qrCodeUrl && (
             <Section style={qrSection}>
               <Text style={qrLabel}>QR-Code für die Abholung</Text>
               <Img
-                src={qrCodeDataUrl}
+                src={qrCodeUrl}
                 width={140}
                 height={140}
                 alt={`QR-Code Bestellung #${orderNumber}`}

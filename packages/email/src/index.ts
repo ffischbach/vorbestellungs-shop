@@ -1,5 +1,4 @@
 import { render } from '@react-email/render'
-import QRCode from 'qrcode'
 import { OrderConfirmation, type OrderConfirmationProps } from './templates/order-confirmation'
 import { OrderReminder, type OrderReminderProps } from './templates/order-reminder'
 
@@ -19,15 +18,8 @@ export async function renderEmail(
   props: OrderConfirmationProps | OrderReminderProps
 ): Promise<string> {
   switch (template) {
-    case 'order-confirmation': {
-      const confirmProps = props as OrderConfirmationProps
-      const qrCodeDataUrl = await QRCode.toDataURL(confirmProps.orderNumber, {
-        width: 140,
-        margin: 1,
-        color: { dark: '#111827', light: '#ffffff' },
-      })
-      return render(OrderConfirmation({ ...confirmProps, qrCodeDataUrl }))
-    }
+    case 'order-confirmation':
+      return render(OrderConfirmation(props as OrderConfirmationProps))
     case 'order-reminder':
       return render(OrderReminder(props as OrderReminderProps))
   }
