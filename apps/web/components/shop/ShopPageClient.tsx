@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Info } from 'lucide-react'
 
 import { ShopLayout } from './ShopLayout'
 import { TimeSlotPicker, TimeSlot } from './TimeSlotPicker'
@@ -56,6 +57,20 @@ export function ShopPageClient({
   const hiddenBySlotCount = selectedSlotId
     ? products.length - slotFilteredProducts.length
     : 0
+
+  const hiddenBySlotInCategoryCount =
+    selectedSlotId && selectedCategoryId
+      ? products.filter(
+          (p) =>
+            p.category.id === selectedCategoryId &&
+            p.allowedSlotIds.length > 0 &&
+            !p.allowedSlotIds.includes(selectedSlotId)
+        ).length
+      : 0
+
+  const displayedHiddenCount = selectedCategoryId
+    ? hiddenBySlotInCategoryCount
+    : hiddenBySlotCount
 
   const filteredProducts = selectedCategoryId
     ? slotFilteredProducts.filter((p) => p.category.id === selectedCategoryId)
@@ -132,10 +147,14 @@ export function ShopPageClient({
             </span>
           </div>
 
-          {selectedSlotId && hiddenBySlotCount > 0 && (
-            <p className="text-xs text-muted-foreground -mt-1">
-              {hiddenBySlotCount} {hiddenBySlotCount === 1 ? 'Produkt ist' : 'Produkte sind'} nur zu anderen Abholzeiten verfügbar und werden nicht angezeigt.
-            </p>
+          {selectedSlotId && displayedHiddenCount > 0 && (
+            <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200 -mt-1">
+              <Info className="mt-0.5 size-4 shrink-0" />
+              <span>
+                {displayedHiddenCount}{' '}
+                {displayedHiddenCount === 1 ? 'Produkt ist' : 'Produkte sind'} nur zu anderen Abholzeiten verfügbar und werden nicht angezeigt.
+              </span>
+            </div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
