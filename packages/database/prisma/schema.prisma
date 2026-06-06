@@ -9,18 +9,31 @@ datasource db {
 }
 
 model Product {
-  id           String       @id @default(cuid())
-  name         String
-  description  String?
-  price        Decimal
-  imageUrl     String?
-  available    Boolean      @default(true)
-  maxQuantity  Int?
-  stock        Int?
-  category     Category     @relation(fields: [categoryId], references: [id])
-  categoryId   String
-  allowedSlots PickupSlot[]
-  orderItems   OrderItem[]
+  id               String             @id @default(cuid())
+  name             String
+  description      String?
+  price            Decimal
+  imageUrl         String?
+  available        Boolean            @default(true)
+  maxQuantity      Int?
+  stock            Int?
+  category         Category           @relation(fields: [categoryId], references: [id])
+  categoryId       String
+  allowedSlots     PickupSlot[]
+  orderItems       OrderItem[]
+  cartReservations CartReservation[]
+}
+
+model CartReservation {
+  id        String   @id @default(cuid())
+  sessionId String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int
+  expiresAt DateTime
+
+  @@unique([sessionId, productId])
+  @@index([productId, expiresAt])
 }
 
 model Category {

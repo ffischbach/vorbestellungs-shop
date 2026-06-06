@@ -23,7 +23,7 @@ export function CheckoutPageClient({
   slots,
   paymentMethods,
 }: CheckoutPageClientProps) {
-  const { items, totalAmount, clearCart, selectedSlotId, setSelectedSlotId } = useCart()
+  const { items, totalAmount, clearCart, selectedSlotId, setSelectedSlotId, sessionId } = useCart()
   const [step, setStep] = useState(1)
 
   const availableSlots = slots.filter((slot) =>
@@ -46,18 +46,22 @@ export function CheckoutPageClient({
     setIsSubmitting(true)
     setSubmitError(null)
 
-    const result = await submitOrder({
-      customerName: formData.name,
-      email: formData.email,
-      pickupSlotId: effectiveSlotId,
-      items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
-    })
+    const result = await submitOrder(
+      {
+        customerName: formData.name,
+        email: formData.email,
+        pickupSlotId: effectiveSlotId,
+        items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+      },
+      sessionId
+    )
 
     if (!result.success) {
       const messages: Record<string, string> = {
         SLOT_FULL: 'Dieser Zeitslot ist leider ausgebucht. Bitte wähle einen anderen.',
         SLOT_NOT_FOUND: 'Der gewählte Zeitslot existiert nicht mehr. Bitte wähle einen anderen.',
         PRODUCT_NOT_FOUND: 'Ein Produkt in deinem Warenkorb ist nicht mehr verfügbar.',
+        PRODUCT_STOCK_EXCEEDED: 'Ein Produkt in deinem Warenkorb ist nicht mehr in ausreichender Menge verfügbar. Bitte passe deine Bestellung an.',
         INVALID_INPUT: 'Bitte überprüfe deine Eingaben.',
       }
       setSubmitError(messages[result.error] ?? result.error)

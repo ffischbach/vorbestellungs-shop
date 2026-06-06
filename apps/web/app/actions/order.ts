@@ -1,7 +1,14 @@
 'use server'
 
 import { z } from 'zod'
-import { createOrder, getProducts, SlotFullError, SlotNotFoundError, ProductStockError } from '@repo/database'
+import {
+  createOrder,
+  getProducts,
+  SlotFullError,
+  SlotNotFoundError,
+  ProductStockError,
+  deleteAllCartReservations,
+} from '@repo/database'
 import { evaluateRules } from '@/lib/validation/evaluate'
 import { renderEmail } from '@repo/email'
 import { sendEmail } from '@/lib/email'
@@ -21,7 +28,7 @@ export type SubmitOrderResult =
   | { success: true; orderId: string; orderNumber: string }
   | { success: false; error: string }
 
-export async function submitOrder(input: unknown): Promise<SubmitOrderResult> {
+export async function submitOrder(input: unknown, sessionId?: string): Promise<SubmitOrderResult> {
   const parsed = orderInputSchema.safeParse(input)
   if (!parsed.success) {
     return { success: false, error: 'INVALID_INPUT' }
@@ -94,6 +101,10 @@ export async function submitOrder(input: unknown): Promise<SubmitOrderResult> {
     },
     clubName: clubConfig.name,
   })
+
+  if (sessionId) {
+    await deleteAllCartReservations(sessionId)
+  }
 
   const emailResult = await sendEmail({
     to: email,

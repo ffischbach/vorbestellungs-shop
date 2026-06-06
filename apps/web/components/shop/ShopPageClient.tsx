@@ -23,6 +23,10 @@ interface Product {
   imageUrl: string | null
   category: Category
   allowedSlotIds: string[]
+  stock: number | null
+  maxQuantity: number | null
+  soldQuantity: number
+  reservedByOthers: number
 }
 
 interface ShopPageClientProps {
@@ -43,7 +47,7 @@ export function ShopPageClient({
   products,
 }: ShopPageClientProps) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>()
-  const { addItem, totalItems, totalAmount, selectedSlotId, setSelectedSlotId } = useCart()
+  const { totalItems, totalAmount, selectedSlotId, setSelectedSlotId } = useCart()
 
   const slotFilteredProducts = selectedSlotId
     ? products.filter(
@@ -74,25 +78,6 @@ export function ShopPageClient({
   const filteredProducts = selectedCategoryId
     ? slotFilteredProducts.filter((p) => p.category.id === selectedCategoryId)
     : slotFilteredProducts
-
-  const handleAddToCart = (
-    productId: string,
-    variantId?: string,
-    quantity?: number
-  ) => {
-    const product = products.find((p) => p.id === productId)
-    if (!product || !quantity) return
-
-    addItem({
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: quantity,
-      imageUrl: product.imageUrl ?? undefined,
-      variantName: variantId,
-      allowedSlotIds: product.allowedSlotIds,
-    })
-  }
 
   return (
     <ShopLayout
@@ -143,7 +128,8 @@ export function ShopPageClient({
                 : 'Unser Angebot'}
             </h2>
             <span className="text-xs text-muted-foreground font-medium">
-              {filteredProducts.length} {filteredProducts.length === 1 ? 'Produkt' : 'Produkte'}
+              {filteredProducts.length}{' '}
+              {filteredProducts.length === 1 ? 'Produkt' : 'Produkte'}
             </span>
           </div>
 
@@ -152,7 +138,8 @@ export function ShopPageClient({
               <Info className="mt-0.5 size-4 shrink-0" />
               <span>
                 {displayedHiddenCount}{' '}
-                {displayedHiddenCount === 1 ? 'Produkt ist' : 'Produkte sind'} nur zu anderen Abholzeiten verfügbar und werden nicht angezeigt.
+                {displayedHiddenCount === 1 ? 'Produkt ist' : 'Produkte sind'} nur zu
+                anderen Abholzeiten verfügbar und werden nicht angezeigt.
               </span>
             </div>
           )}
@@ -166,7 +153,11 @@ export function ShopPageClient({
                 description={product.description ?? undefined}
                 price={product.price}
                 imageUrl={product.imageUrl ?? undefined}
-                onAddToCart={handleAddToCart}
+                stock={product.stock}
+                maxQuantity={product.maxQuantity}
+                soldQuantity={product.soldQuantity}
+                reservedByOthers={product.reservedByOthers}
+                allowedSlotIds={product.allowedSlotIds}
                 index={index}
               />
             ))}

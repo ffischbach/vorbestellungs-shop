@@ -1,4 +1,11 @@
-import { getProducts, getPickupSlots, getCategories } from '@repo/database'
+import { cookies } from 'next/headers'
+import {
+  getProducts,
+  getPickupSlots,
+  getCategories,
+  getProductSoldQuantities,
+  getReservedQuantitiesByOthers,
+} from '@repo/database'
 import { getClubConfig } from '@/club.config'
 import { ShopPageClient } from '@/components/shop/ShopPageClient'
 import { buildTimeSlots } from '@/lib/slots'
@@ -6,12 +13,18 @@ import { buildTimeSlots } from '@/lib/slots'
 export const dynamic = 'force-dynamic'
 
 export default async function ShopPage() {
-  const [clubConfig, products, slots, categories] = await Promise.all([
-    getClubConfig(),
-    getProducts(),
-    getPickupSlots(),
-    getCategories(),
-  ])
+  const cookieStore = await cookies()
+  const sessionId = cookieStore.get('cart_session')?.value
+
+  const [clubConfig, products, soldQuantities, reservedByOthers, slots, categories] =
+    await Promise.all([
+      getClubConfig(),
+      getProducts(),
+      getProductSoldQuantities(),
+      getReservedQuantitiesByOthers(sessionId),
+      getPickupSlots(),
+      getCategories(),
+    ])
 
   const timeSlots = buildTimeSlots(slots)
 
@@ -35,6 +48,10 @@ export default async function ShopPage() {
         imageUrl: p.imageUrl,
         category: { id: p.category.id, name: p.category.name },
         allowedSlotIds: p.allowedSlots.map((s) => s.id),
+        stock: p.stock,
+        maxQuantity: p.maxQuantity,
+        soldQuantity: soldQuantities[p.id] ?? 0,
+        reservedByOthers: reservedByOthers[p.id] ?? 0,
       }))}
     />
   )

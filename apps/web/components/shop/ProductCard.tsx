@@ -1,7 +1,7 @@
 'use client'
 
 import { Minus, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useCart } from './CartContext'
 
 interface ProductCardProps {
   id: string
@@ -9,8 +9,12 @@ interface ProductCardProps {
   description?: string
   price: number
   imageUrl?: string
+  stock: number | null
+  maxQuantity: number | null
+  soldQuantity: number
+  reservedByOthers: number
+  allowedSlotIds: string[]
   variants?: { id: string; name: string; price: number }[]
-  onAddToCart: (productId: string, variantId?: string, quantity?: number) => void
   index?: number
 }
 
@@ -20,40 +24,45 @@ export function ProductCard({
   description,
   price,
   imageUrl,
-  variants,
-  onAddToCart,
+  stock,
+  maxQuantity,
+  soldQuantity,
+  reservedByOthers,
+  allowedSlotIds,
   index = 0,
 }: ProductCardProps) {
-  const [selectedVariant, setSelectedVariant] = useState(variants?.[0]?.id)
-  const [quantity, setQuantity] = useState(0)
+  const { items, setProductQuantity } = useCart()
 
-  const currentPrice =
-    variants?.find((v) => v.id === selectedVariant)?.price ?? price
+  const cartItem = items.find((i) => i.productId === id)
+  const quantity = cartItem?.quantity ?? 0
 
-  const handleAdd = () => {
-    setQuantity(1)
-    onAddToCart(id, selectedVariant, 1)
-  }
+  // How many units are available for this session (server already excluded our own reservation)
+  const availableForMe =
+    stock !== null ? Math.max(0, stock - soldQuantity - reservedByOthers) : null
+
+  const atStockLimit = availableForMe !== null && quantity >= availableForMe
+  const atMaxLimit = maxQuantity !== null && quantity >= maxQuantity
+  const canIncrement = !atStockLimit && !atMaxLimit
+
+  const isSoldOut = availableForMe !== null && availableForMe === 0 && quantity === 0
+
+  // Remaining units the user can still add
+  const remaining = availableForMe !== null ? availableForMe - quantity : null
+  const showRemaining = remaining !== null && remaining <= 10 && remaining > 0
+
+  const productData = { productId: id, name, price, imageUrl, allowedSlotIds }
 
   const handleIncrement = () => {
-    const newQty = quantity + 1
-    setQuantity(newQty)
-    onAddToCart(id, selectedVariant, newQty)
+    if (!canIncrement) return
+    setProductQuantity(productData, quantity + 1)
   }
 
   const handleDecrement = () => {
-    if (quantity > 1) {
-      const newQty = quantity - 1
-      setQuantity(newQty)
-      onAddToCart(id, selectedVariant, newQty)
-    } else {
-      setQuantity(0)
-      onAddToCart(id, selectedVariant, 0)
-    }
+    setProductQuantity(productData, quantity - 1)
   }
 
   return (
-    <div 
+    <div
       className="group relative bg-card border border-border overflow-hidden animate-fade-in-up opacity-0"
       style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
     >
@@ -88,34 +97,31 @@ export function ProductCard({
           )}
         </div>
 
-        {/* Variants */}
-        {variants && variants.length > 1 && (
-          <div className="mb-3 flex flex-wrap gap-1.5">
-            {variants.map((variant) => (
-              <button
-                key={variant.id}
-                onClick={() => setSelectedVariant(variant.id)}
-                className={`px-2.5 py-1 text-xs font-medium border transition-colors ${
-                  selectedVariant === variant.id
-                    ? 'bg-foreground text-background border-foreground'
-                    : 'bg-background text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground'
-                }`}
-              >
-                {variant.name}
-              </button>
-            ))}
-          </div>
+        {/* Stock indicators */}
+        {showRemaining && (
+          <p className="mb-2 text-xs font-medium text-amber-600 dark:text-amber-400">
+            Noch {remaining} verfügbar
+          </p>
+        )}
+        {atMaxLimit && maxQuantity !== null && (
+          <p className="mb-2 text-xs font-medium text-muted-foreground">
+            Max. {maxQuantity} pro Bestellung
+          </p>
         )}
 
         {/* Price & Action */}
         <div className="flex items-center justify-between pt-3 border-t border-border">
           <span className="text-base font-bold text-foreground">
-            {currentPrice.toFixed(2).replace('.', ',')} €
+            {price.toFixed(2).replace('.', ',')} €
           </span>
 
-          {quantity === 0 ? (
+          {isSoldOut ? (
+            <span className="px-3 py-1.5 text-xs font-bold bg-muted text-muted-foreground uppercase tracking-wider">
+              Ausverkauft
+            </span>
+          ) : quantity === 0 ? (
             <button
-              onClick={handleAdd}
+              onClick={handleIncrement}
               className="flex items-center justify-center w-8 h-8 bg-foreground text-background hover:bg-foreground/80 active:scale-95 transition-colors"
               aria-label={`${name} in den Warenkorb legen`}
             >
@@ -139,7 +145,8 @@ export function ProductCard({
               </span>
               <button
                 onClick={handleIncrement}
-                className="flex items-center justify-center w-8 h-8 bg-foreground text-background hover:bg-foreground/80 transition-colors active:scale-95"
+                disabled={!canIncrement}
+                className="flex items-center justify-center w-8 h-8 bg-foreground text-background hover:bg-foreground/80 transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Menge erhöhen"
               >
                 <Plus className="w-3.5 h-3.5" />
