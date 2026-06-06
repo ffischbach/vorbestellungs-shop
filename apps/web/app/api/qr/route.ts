@@ -3,8 +3,8 @@ import QRCode from 'qrcode'
 
 export async function GET(request: NextRequest) {
   const data = request.nextUrl.searchParams.get('data')
-  if (!data || data.length > 100) {
-    return NextResponse.json({ error: 'Invalid data' }, { status: 400 })
+  if (!data || !/^VB-[A-Z0-9]{6}$/.test(data)) {
+    return NextResponse.json({ error: 'Invalid order number' }, { status: 400 })
   }
 
   const buffer = await QRCode.toBuffer(data, {
