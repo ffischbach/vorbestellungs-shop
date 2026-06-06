@@ -10,10 +10,12 @@ import { hashPassword } from '@better-auth/utils/password'
 
 async function getClientIp(): Promise<string> {
   const h = await headers()
-  const forwarded = h.get('x-forwarded-for')
-  if (forwarded) return forwarded.split(',')[0].trim()
+  // x-real-ip is set by Caddy to the actual client IP and cannot be spoofed
   const realIp = h.get('x-real-ip')
   if (realIp) return realIp
+  // Fallback: rightmost entry in X-Forwarded-For is set by the nearest trusted proxy
+  const forwarded = h.get('x-forwarded-for')
+  if (forwarded) return forwarded.split(',').at(-1)!.trim()
   return 'unknown'
 }
 
@@ -141,12 +143,6 @@ export async function setupAdminAction(
   const ua = await getUserAgent()
   const authLogger = logger.child({ event: 'admin_setup', ip, ua })
 
-  const existing = await db.user.count()
-  if (existing > 0) {
-    authLogger.warn('admin_setup_rejected_existing_user')
-    return { error: 'Es existiert bereits ein Admin-Account.' }
-  }
-
   const email = formData.get('email')?.toString().trim() ?? ''
   const password = formData.get('password')?.toString() ?? ''
   const name = formData.get('name')?.toString().trim() || 'Admin'
@@ -160,16 +156,22 @@ export async function setupAdminAction(
   }
 
   // Direkt in DB anlegen — umgeht disableSignUp ohne Env-Var-Workaround.
-  // Entspricht exakt dem, was Better Auth intern bei signUpEmail tut.
+  // Count-Check und Create in einer Transaktion, um TOCTOU-Race zu verhindern.
+  const userId = crypto.randomUUID()
+  const now = new Date()
+  const hashed = await hashPassword(password)
+  let alreadyExists = false
   try {
-    const userId = crypto.randomUUID()
-    const now = new Date()
-    const hashed = await hashPassword(password)
-    await db.$transaction([
-      db.user.create({
+    await db.$transaction(async (tx) => {
+      const existing = await tx.user.count()
+      if (existing > 0) {
+        alreadyExists = true
+        return
+      }
+      await tx.user.create({
         data: { id: userId, name, email, emailVerified: false, createdAt: now, updatedAt: now },
-      }),
-      db.account.create({
+      })
+      await tx.account.create({
         data: {
           id: crypto.randomUUID(),
           accountId: userId,
@@ -179,11 +181,16 @@ export async function setupAdminAction(
           createdAt: now,
           updatedAt: now,
         },
-      }),
-    ])
+      })
+    })
   } catch {
     authLogger.error({ email }, 'admin_setup_failure')
     return { error: 'Account konnte nicht erstellt werden.' }
+  }
+
+  if (alreadyExists) {
+    authLogger.warn('admin_setup_rejected_existing_user')
+    return { error: 'Es existiert bereits ein Admin-Account.' }
   }
 
   authLogger.info({ email }, 'admin_setup_success')

@@ -5,7 +5,11 @@
   }
 
   handle {
-    reverse_proxy app:3000
+    reverse_proxy app:3000 {
+      # Set X-Real-IP to the actual client address so the app can use it for rate limiting
+      # without being spoofed via a client-controlled X-Forwarded-For header
+      header_up X-Real-IP {http.request.remote.host}
+    }
   }
 
   header {
