@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createProductAction, updateProductAction, type ActionState } from '@/app/actions/admin'
+import { ImageUpload } from './ImageUpload'
 
 interface Category { id: string; name: string }
 interface Slot { id: string; label: string }
@@ -58,8 +59,7 @@ function ProductFields({ categories, slots, defaults }: ProductFieldsProps) {
           <Input name="description" placeholder="Kurze Beschreibung" defaultValue={defaults?.description} className="mt-1" />
         </div>
         <div className="md:col-span-2">
-          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Bild-URL</Label>
-          <Input name="imageUrl" type="url" placeholder="https://…" defaultValue={defaults?.imageUrl} className="mt-1" />
+          <ImageUpload defaultImageUrl={defaults?.imageUrl} />
         </div>
       </div>
 

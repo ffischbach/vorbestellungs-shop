@@ -10,8 +10,10 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  getProductById,
   updateOrderStatus,
 } from '@repo/database'
+import { deleteFile } from '@/lib/storage'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -214,10 +216,14 @@ export async function toggleProductAvailabilityAction(formData: FormData): Promi
 export async function deleteProductAction(formData: FormData): Promise<void> {
   const id = formData.get('id')?.toString()
   if (!id) return
+  const product = await getProductById(id)
   try {
     await deleteProduct(id)
   } catch {
     redirect('/admin/products?error=hat_bestellungen')
+  }
+  if (product?.imageUrl) {
+    try { await deleteFile(product.imageUrl) } catch { /* S3-Fehler soll DB-Erfolg nicht überschreiben */ }
   }
   revalidatePath('/admin/products')
 }
