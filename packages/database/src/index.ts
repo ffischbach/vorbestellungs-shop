@@ -18,6 +18,7 @@ export type {
   Order,
   OrderItem,
   OrderStatus,
+  ClubConfig,
 } from '@prisma/client'
 export { SlotFullError, SlotNotFoundError, ProductStockError } from './queries/orders'
 
@@ -25,3 +26,4 @@ export * from './queries/products'
 export * from './queries/categories'
 export * from './queries/slots'
 export * from './queries/orders'
+export * from './queries/clubConfig'
