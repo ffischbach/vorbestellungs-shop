@@ -39,3 +39,22 @@ export async function getReservedQuantitiesByOthers(
 export async function cleanupExpiredReservations() {
   return db.cartReservation.deleteMany({ where: { expiresAt: { lt: new Date() } } })
 }
+
+export async function getCartItemsBySession(sessionId: string) {
+  const reservations = await db.cartReservation.findMany({
+    where: { sessionId, expiresAt: { gt: new Date() } },
+    include: {
+      product: {
+        include: { allowedSlots: { select: { id: true } } },
+      },
+    },
+  })
+  return reservations.map((r) => ({
+    productId: r.productId,
+    quantity: r.quantity,
+    name: r.product.name,
+    price: Number(r.product.price),
+    imageUrl: r.product.imageUrl ?? undefined,
+    allowedSlotIds: r.product.allowedSlots.map((s) => s.id),
+  }))
+}

@@ -4,6 +4,7 @@ import {
   upsertCartReservation,
   deleteCartReservation,
   deleteAllCartReservations,
+  getCartItemsBySession,
 } from '@repo/database'
 
 export async function syncCartReservation(
@@ -22,4 +23,17 @@ export async function syncCartReservation(
 export async function clearAllCartReservations(sessionId: string) {
   if (!sessionId) return
   await deleteAllCartReservations(sessionId)
+}
+
+export async function fetchCartItems(sessionId: string): Promise<
+  | { success: true; data: Awaited<ReturnType<typeof getCartItemsBySession>> }
+  | { success: false; error: string }
+> {
+  if (!sessionId) return { success: true, data: [] }
+  try {
+    const data = await getCartItemsBySession(sessionId)
+    return { success: true, data }
+  } catch {
+    return { success: false, error: 'FETCH_FAILED' }
+  }
 }

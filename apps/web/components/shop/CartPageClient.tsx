@@ -18,7 +18,7 @@ export default function CartPageClient({
   eventDate,
   logoUrl,
 }: CartPageClientProps) {
-  const { items, updateQuantity, removeItem, totalAmount, totalItems } =
+  const { items, updateQuantity, removeItem, totalAmount, totalItems, isLoading } =
     useCart()
 
   return (
@@ -36,7 +36,9 @@ export default function CartPageClient({
           </p>
         </div>
 
-        {items.length === 0 ? (
+        {isLoading ? (
+          <p className="text-muted-foreground text-sm py-8 text-center">Warenkorb wird geladen…</p>
+        ) : items.length === 0 ? (
           <EmptyState
             icon={<ShoppingCart className="w-7 h-7" />}
             title="Dein Warenkorb ist leer"

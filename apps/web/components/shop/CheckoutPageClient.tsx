@@ -23,7 +23,7 @@ export function CheckoutPageClient({
   slots,
   paymentMethods,
 }: CheckoutPageClientProps) {
-  const { items, totalAmount, clearCart, selectedSlotId, setSelectedSlotId, sessionId } = useCart()
+  const { items, totalAmount, clearCart, selectedSlotId, setSelectedSlotId, sessionId, isLoading } = useCart()
   const [step, setStep] = useState(1)
 
   const availableSlots = slots.filter((slot) =>
@@ -76,7 +76,7 @@ export function CheckoutPageClient({
     setIsSubmitting(false)
   }
 
-  if (items.length === 0 && !orderComplete) {
+  if (!isLoading && items.length === 0 && !orderComplete) {
     return (
       <ShopLayout
         eventName={eventName}
