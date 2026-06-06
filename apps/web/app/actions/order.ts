@@ -5,7 +5,7 @@ import { createOrder, getProducts, SlotFullError, SlotNotFoundError, ProductStoc
 import { evaluateRules } from '@/lib/validation/evaluate'
 import { renderEmail } from '@repo/email'
 import { sendEmail } from '@/lib/email'
-import clubConfig from '@/club.config'
+import { getClubConfig } from '@/club.config'
 
 const orderInputSchema = z.object({
   customerName: z.string().min(1),
@@ -69,6 +69,8 @@ export async function submitOrder(input: unknown): Promise<SubmitOrderResult> {
   }
 
   const orderNumber = `VB-${order.id.slice(-6).toUpperCase()}`
+
+  const clubConfig = await getClubConfig()
 
   const emailHtml = await renderEmail('order-confirmation', {
     orderNumber,

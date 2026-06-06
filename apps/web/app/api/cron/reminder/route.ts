@@ -5,7 +5,7 @@ import { getOrdersPendingReminder, markReminderSent } from '@repo/database'
 import { renderEmail } from '@repo/email'
 import { sendEmail } from '@/lib/email'
 import logger from '@/lib/logger'
-import clubConfig from '@/club.config'
+import { getClubConfig } from '@/club.config'
 
 export async function POST(request: NextRequest) {
   const secret = request.headers.get('x-cron-secret')
@@ -16,7 +16,10 @@ export async function POST(request: NextRequest) {
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
 
-  const orders = await getOrdersPendingReminder(tomorrow)
+  const [orders, clubConfig] = await Promise.all([
+    getOrdersPendingReminder(tomorrow),
+    getClubConfig(),
+  ])
   logger.info({ count: orders.length }, 'Reminder-Mails werden versendet')
 
   const results = await Promise.allSettled(

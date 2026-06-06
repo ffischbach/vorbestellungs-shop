@@ -1,7 +1,8 @@
-import clubConfig from '@/club.config'
+import { getClubConfig } from '@/club.config'
 import CartPageClient from '@/components/shop/CartPageClient'
 
 export default async function CartPage() {
+  const clubConfig = await getClubConfig()
   return (
     <CartPageClient
       eventName={clubConfig.eventName}

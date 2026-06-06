@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
-import clubConfig from "@/club.config";
+import { getClubConfig } from "@/club.config";
 import { CartProvider } from "@/components/shop/CartContext";
 import "./globals.css";
 
@@ -20,16 +20,20 @@ const playfair = Playfair_Display({
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: `${clubConfig.eventName} - Vorbestellung`,
-  description: `Online-Vorbestellung für ${clubConfig.eventName}`,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const clubConfig = await getClubConfig();
+  return {
+    title: `${clubConfig.eventName} - Vorbestellung`,
+    description: `Online-Vorbestellung für ${clubConfig.eventName}`,
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const clubConfig = await getClubConfig();
   return (
     <html
       lang="de"

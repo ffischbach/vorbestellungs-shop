@@ -1,7 +1,8 @@
-import clubConfig from '@/club.config'
+import { getClubConfig } from '@/club.config'
 import { TotpLoginForm } from './totp-login-form'
 
-export default function TotpLoginPage() {
+export default async function TotpLoginPage() {
+  const clubConfig = await getClubConfig()
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
       <div className="w-full max-w-sm rounded-xl border bg-background p-8 shadow-sm space-y-6">

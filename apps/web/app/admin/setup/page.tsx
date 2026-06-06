@@ -1,12 +1,12 @@
 import { redirect } from 'next/navigation'
 import { db } from '@repo/database'
-import clubConfig from '@/club.config'
+import { getClubConfig } from '@/club.config'
 import { SetupForm } from './setup-form'
 
 export const dynamic = 'force-dynamic'
 
 export default async function SetupPage() {
-  const existing = await db.user.count()
+  const [existing, clubConfig] = await Promise.all([db.user.count(), getClubConfig()])
   if (existing > 0) redirect('/admin')
 
   return (

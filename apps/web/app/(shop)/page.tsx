@@ -1,12 +1,13 @@
 import { getProducts, getPickupSlots, getCategories } from '@repo/database'
-import clubConfig from '@/club.config'
+import { getClubConfig } from '@/club.config'
 import { ShopPageClient } from '@/components/shop/ShopPageClient'
 import { buildTimeSlots } from '@/lib/slots'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ShopPage() {
-  const [products, slots, categories] = await Promise.all([
+  const [clubConfig, products, slots, categories] = await Promise.all([
+    getClubConfig(),
     getProducts(),
     getPickupSlots(),
     getCategories(),

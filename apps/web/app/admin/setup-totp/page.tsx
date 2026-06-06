@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { db } from '@repo/database'
 import { getSessionFromCookie } from '@/lib/session'
-import clubConfig from '@/club.config'
+import { getClubConfig } from '@/club.config'
 import { TotpSetupForm } from './totp-setup-form'
 
 export const dynamic = 'force-dynamic'
@@ -12,10 +12,10 @@ export default async function SetupTotpPage() {
   const session = await getSessionFromCookie()
   if (!session?.user) redirect('/admin/login')
 
-  const user = await db.user.findUnique({
-    where: { id: session.user.id },
-    select: { twoFactorEnabled: true },
-  })
+  const [user, clubConfig] = await Promise.all([
+    db.user.findUnique({ where: { id: session.user.id }, select: { twoFactorEnabled: true } }),
+    getClubConfig(),
+  ])
   if (user?.twoFactorEnabled) redirect('/admin')
 
   return (
