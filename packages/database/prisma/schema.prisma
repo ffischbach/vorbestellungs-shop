@@ -53,6 +53,7 @@ model Order {
 model OrderItem {
   id        String  @id @default(cuid())
   quantity  Int
+  price     Decimal
   order     Order   @relation(fields: [orderId], references: [id])
   orderId   String
   product   Product @relation(fields: [productId], references: [id])

@@ -140,6 +140,8 @@ async function main() {
     { name: 'Sabine Koch', email: 'sabine@example.com', slotId: 'slot-1', items: [{ productId: 'prod-bratwurst', qty: 1 }, { productId: 'prod-kuchen', qty: 1 }, { productId: 'prod-cola', qty: 2 }] },
   ]
 
+  const productPrices = Object.fromEntries(products.map((p) => [p.id, p.price]))
+
   for (const [i, o] of orderData.entries()) {
     await db.order.upsert({
       where: { id: `order-seed-${i + 1}` },
@@ -154,6 +156,7 @@ async function main() {
           create: o.items.map((item) => ({
             productId: item.productId,
             quantity: item.qty,
+            price: productPrices[item.productId]!,
           })),
         },
       },

@@ -1,8 +1,10 @@
 import { db } from '../index'
 
+const activeOrdersCount = { orders: { where: { status: { not: 'CANCELLED' as const } } } }
+
 export async function getPickupSlots() {
   return db.pickupSlot.findMany({
-    include: { products: true, _count: { select: { orders: true } } },
+    include: { products: true, _count: { select: activeOrdersCount } },
     orderBy: { startTime: 'asc' },
   })
 }
@@ -10,7 +12,7 @@ export async function getPickupSlots() {
 export async function getPickupSlotById(id: string) {
   return db.pickupSlot.findUnique({
     where: { id },
-    include: { products: true, _count: { select: { orders: true } } },
+    include: { products: true, _count: { select: activeOrdersCount } },
   })
 }
 
