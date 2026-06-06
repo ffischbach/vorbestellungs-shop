@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import clubConfig from "@/club.config";
+import { CartProvider } from "@/components/shop/CartContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,9 +14,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: 'Vorbestellungsshop',
-  description: 'Online-Vorbestellungsshop für Vereinsveranstaltungen',
+  title: `${clubConfig.eventName} - Vorbestellung`,
+  description: `Online-Vorbestellung für ${clubConfig.eventName}`,
 };
 
 export default function RootLayout({
@@ -26,13 +33,15 @@ export default function RootLayout({
   return (
     <html
       lang="de"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
       style={{
-        ['--color-primary' as string]: clubConfig.primaryColor,
-        ['--color-accent' as string]: clubConfig.accentColor,
+        ['--primary' as string]: clubConfig.primaryColor,
+        ['--accent' as string]: clubConfig.accentColor,
       }}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <CartProvider>{children}</CartProvider>
+      </body>
     </html>
   );
 }
