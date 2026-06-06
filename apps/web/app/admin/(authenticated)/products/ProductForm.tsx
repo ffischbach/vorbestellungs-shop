@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { createProductAction, updateProductAction, type ActionState } from '@/app/actions/admin'
+import { createProductAction, updateProductAction } from '@/app/actions/admin'
 import { ImageUpload } from './ImageUpload'
 
 interface Category { id: string; name: string }

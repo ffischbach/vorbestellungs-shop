@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
 import { ReactNode } from 'react'
@@ -27,10 +28,12 @@ export function ShopLayout({
           <Link href="/" className="flex items-center gap-3 group">
             {logoUrl && (
               <div className="relative w-10 h-10 overflow-hidden bg-white border border-border">
-                <img
+                <Image
                   src={logoUrl}
                   alt=""
-                  className="w-full h-full object-contain p-1"
+                  fill
+                  unoptimized
+                  className="object-contain p-1"
                 />
               </div>
             )}

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Minus, Plus, Trash2 } from 'lucide-react'
 import { useCart } from './CartContext'
 
@@ -68,11 +69,13 @@ export function ProductCard({
     >
       {/* Product Image */}
       {imageUrl ? (
-        <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
-          <img
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+          <Image
             src={imageUrl}
             alt={name}
-            className="h-full w-full object-cover"
+            fill
+            unoptimized
+            className="object-cover"
             loading="lazy"
           />
         </div>

@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { createSlotAction, updateSlotAction, type ActionState } from '@/app/actions/admin'
+import { createSlotAction, updateSlotAction } from '@/app/actions/admin'
 
 function SlotFields({ defaults }: { defaults?: { label: string; startTime: string; endTime: string; capacity: string } }) {
   return (

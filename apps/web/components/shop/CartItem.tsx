@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Minus, Plus, Trash2 } from 'lucide-react'
 
 interface CartItemProps {
@@ -29,11 +30,13 @@ export function CartItem({
     <div className="flex items-center gap-4 p-4 bg-card border border-border">
       {/* Thumbnail */}
       {imageUrl ? (
-        <div className="flex-shrink-0 w-14 h-14 overflow-hidden bg-muted">
-          <img
+        <div className="relative flex-shrink-0 w-14 h-14 overflow-hidden bg-muted">
+          <Image
             src={imageUrl}
             alt={name}
-            className="w-full h-full object-cover"
+            fill
+            unoptimized
+            className="object-cover"
           />
         </div>
       ) : (

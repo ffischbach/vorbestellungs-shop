@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { createCategoryAction, updateCategoryAction, type ActionState } from '@/app/actions/admin'
+import { createCategoryAction, updateCategoryAction } from '@/app/actions/admin'
 
 export function CreateCategoryForm() {
   const [state, action, isPending] = useActionState(createCategoryAction, null)

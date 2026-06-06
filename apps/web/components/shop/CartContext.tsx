@@ -9,7 +9,7 @@ import {
   useRef,
   ReactNode,
 } from 'react'
-import { syncCartReservation, clearAllCartReservations } from '@/app/actions/cart'
+import { syncCartReservation, clearAllCartReservations, fetchCartItems } from '@/app/actions/cart'
 
 export interface CartItem {
   id: string
@@ -34,6 +34,7 @@ export interface CartItemData {
 interface CartContextType {
   items: CartItem[]
   sessionId: string
+  isLoading: boolean
   setProductQuantity: (product: CartItemData, quantity: number) => void
   updateQuantity: (itemId: string, quantity: number) => void
   removeItem: (itemId: string) => void
@@ -55,22 +56,54 @@ function getOrCreateSessionId(): string {
   return id
 }
 
+function readCookie(name: string): string | undefined {
+  if (typeof document === 'undefined') return undefined
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
+  return match ? decodeURIComponent(match[1]) : undefined
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
-  const [selectedSlotId, setSelectedSlotId] = useState<string | undefined>()
-  const [sessionId, setSessionId] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [selectedSlotId, setSelectedSlotIdState] = useState<string | undefined>()
+  const [sessionId] = useState(() => typeof window !== 'undefined' ? getOrCreateSessionId() : '')
 
-  const sessionIdRef = useRef('')
+  const sessionIdRef = useRef(sessionId)
   const itemsRef = useRef<CartItem[]>([])
 
   useEffect(() => { itemsRef.current = items }, [items])
   useEffect(() => { sessionIdRef.current = sessionId }, [sessionId])
 
   useEffect(() => {
-    const id = getOrCreateSessionId()
-    setSessionId(id)
-    sessionIdRef.current = id
-    document.cookie = `cart_session=${id}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`
+    if (!sessionId) {
+      setIsLoading(false)
+      return
+    }
+    document.cookie = `cart_session=${sessionId}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`
+
+    const storedSlot = readCookie('cart_slot')
+    if (storedSlot) setSelectedSlotIdState(storedSlot)
+
+    fetchCartItems(sessionId).then((result) => {
+      if (result.success) {
+        setItems(
+          result.data.map((item) => ({
+            ...item,
+            id: `${item.productId}-${Date.now()}`,
+          }))
+        )
+      }
+      setIsLoading(false)
+    })
+  }, [sessionId])
+
+  const setSelectedSlotId = useCallback((id: string | undefined) => {
+    setSelectedSlotIdState(id)
+    if (id) {
+      document.cookie = `cart_slot=${encodeURIComponent(id)}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`
+    } else {
+      document.cookie = 'cart_slot=; path=/; max-age=0'
+    }
   }, [])
 
   const setProductQuantity = useCallback((product: CartItemData, quantity: number) => {
@@ -112,6 +145,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = useCallback(() => {
     setItems([])
+    setSelectedSlotIdState(undefined)
+    document.cookie = 'cart_slot=; path=/; max-age=0'
     if (sessionIdRef.current) clearAllCartReservations(sessionIdRef.current)
   }, [])
 
@@ -123,6 +158,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{
         items,
         sessionId,
+        isLoading,
         setProductQuantity,
         updateQuantity,
         removeItem,

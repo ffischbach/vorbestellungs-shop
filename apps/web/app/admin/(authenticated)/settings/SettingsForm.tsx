@@ -4,7 +4,7 @@ import { useState, useActionState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { updateClubConfigAction, type ActionState } from '@/app/actions/admin'
+import { updateClubConfigAction } from '@/app/actions/admin'
 import type { ClubConfig } from '@repo/config'
 
 export function SettingsForm({ current }: { current: ClubConfig }) {
