@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-export const dynamic = 'force-dynamic'
+import { auth } from '@/lib/auth'
 import { getOrders } from '@repo/database'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
-  const secret = request.headers.get('x-cron-secret')
-  if (secret !== process.env.CRON_SECRET) {
+  if (!(await auth.api.getSession({ headers: request.headers }))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -27,7 +27,18 @@ export async function GET(request: NextRequest) {
     ),
   ]
 
-  const csv = rows.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n')
+  const csv = rows
+    .map((row) =>
+      row
+        .map((cell) => {
+          const escaped = cell.replace(/"/g, '""')
+          // Prevent formula injection in spreadsheet applications
+          const safe = /^[=+\-@\t\r]/.test(escaped) ? `'${escaped}` : escaped
+          return `"${safe}"`
+        })
+        .join(','),
+    )
+    .join('\n')
 
   return new NextResponse(csv, {
     headers: {
