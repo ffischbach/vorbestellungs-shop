@@ -13,7 +13,13 @@ const envDefaults = {
 }
 
 export async function getClubConfig(): Promise<ClubConfig> {
-  const db = await getClubConfigFromDb()
+  // DB may be unavailable at build time — fall back to env defaults silently
+  let db: Awaited<ReturnType<typeof getClubConfigFromDb>> = null
+  try {
+    db = await getClubConfigFromDb()
+  } catch {
+    // no-op: use env defaults below
+  }
   return clubConfigSchema.parse({
     name:         db?.clubName     ?? envDefaults.name,
     logoUrl:      db?.logoUrl      ?? envDefaults.logoUrl,
