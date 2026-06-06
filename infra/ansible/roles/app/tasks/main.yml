@@ -82,6 +82,27 @@
     owner: "{{ deploy_user }}"
     mode: '0644'
 
+- name: Backup-Verzeichnis anlegen
+  file:
+    path: "{{ app_dir }}/backup"
+    state: directory
+    owner: "{{ deploy_user }}"
+    mode: '0750'
+
+- name: Backup-Dockerfile deployen
+  copy:
+    src: "{{ playbook_dir }}/../../docker/backup/Dockerfile"
+    dest: "{{ app_dir }}/backup/Dockerfile"
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Backup-Script deployen
+  copy:
+    src: "{{ playbook_dir }}/../../docker/backup/backup.sh"
+    dest: "{{ app_dir }}/backup/backup.sh"
+    owner: "{{ deploy_user }}"
+    mode: '0755'
+
 - name: Daten-Verzeichnis für PostgreSQL anlegen
   file:
     path: "{{ data_dir }}/postgres"

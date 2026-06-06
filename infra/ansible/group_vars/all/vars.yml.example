@@ -10,6 +10,12 @@ smtp_secure: "true"
 smtp_user: "shop@example.de"
 smtp_from: "shop@example.de"
 
+# Hetzner Object Storage — Bucket vorab im Hetzner-Panel anlegen
+s3_endpoint: "https://fsn1.your-objectstorage.com"
+s3_region: "fsn1"
+s3_bucket_name: "shop-assets"
+s3_public_url: "https://shop-assets.fsn1.your-objectstorage.com"
+
 # Monitoring — IPs nach terraform apply eintragen
 app_server_ip: ""        # terraform output server_ip
 monitoring_server_ip: "" # terraform output monitoring_ip

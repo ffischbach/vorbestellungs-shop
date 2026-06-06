@@ -58,6 +58,16 @@ services:
       - /home/shop/.docker/config.json:/root/.docker/config.json:ro
       - /opt/shop:/opt/shop:ro
 
+  backup:
+    build: ./backup
+    env_file: /opt/shop/.env
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Berlin"
+    depends_on:
+      db:
+        condition: service_healthy
+
   node-exporter:
     image: prom/node-exporter:latest
     restart: unless-stopped
