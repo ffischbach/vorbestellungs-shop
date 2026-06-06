@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { createOrder, getProducts, SlotFullError, SlotNotFoundError } from '@repo/database'
+import { createOrder, getProducts, SlotFullError, SlotNotFoundError, ProductStockError } from '@repo/database'
 import { evaluateRules } from '@/lib/validation/evaluate'
 import { renderEmail } from '@repo/email'
 import { sendEmail } from '@/lib/email'
@@ -64,6 +64,7 @@ export async function submitOrder(input: unknown): Promise<SubmitOrderResult> {
   } catch (err) {
     if (err instanceof SlotFullError) return { success: false, error: 'SLOT_FULL' }
     if (err instanceof SlotNotFoundError) return { success: false, error: 'SLOT_NOT_FOUND' }
+    if (err instanceof ProductStockError) return { success: false, error: 'PRODUCT_STOCK_EXCEEDED' }
     throw err
   }
 

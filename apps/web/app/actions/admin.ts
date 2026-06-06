@@ -164,8 +164,14 @@ export async function createProductAction(
     return { error: 'Maximale Menge muss eine positive Zahl sein.' }
   }
 
+  const stockRaw = formData.get('stock')?.toString().trim()
+  const stock = stockRaw ? parseInt(stockRaw, 10) : undefined
+  if (stock !== undefined && (isNaN(stock) || stock < 1)) {
+    return { error: 'Bestand muss eine positive Zahl sein.' }
+  }
+
   try {
-    await createProduct({ name, description, price, categoryId, allowedSlotIds, maxQuantity, imageUrl })
+    await createProduct({ name, description, price, categoryId, allowedSlotIds, maxQuantity, stock, imageUrl })
     revalidatePath('/admin/products')
     return { success: true }
   } catch {
@@ -196,8 +202,14 @@ export async function updateProductAction(
     return { error: 'Maximale Menge muss eine positive Zahl sein.' }
   }
 
+  const stockRaw = formData.get('stock')?.toString().trim()
+  const stock = stockRaw ? parseInt(stockRaw, 10) : null
+  if (stock !== null && (isNaN(stock) || stock < 1)) {
+    return { error: 'Bestand muss eine positive Zahl sein.' }
+  }
+
   try {
-    await updateProduct(id, { name, description, price, categoryId, allowedSlotIds, maxQuantity, imageUrl })
+    await updateProduct(id, { name, description, price, categoryId, allowedSlotIds, maxQuantity, stock, imageUrl })
     revalidatePath('/admin/products')
     return { success: true }
   } catch {

@@ -18,6 +18,8 @@ interface ProductRowProps {
   description: string
   imageUrl: string
   maxQuantity: string
+  stock: string
+  soldQuantity: number
   categories: Category[]
   slots: Slot[]
   deleteAction: (formData: FormData) => Promise<void>
@@ -25,7 +27,7 @@ interface ProductRowProps {
 
 export function ProductRow({
   id, name, categoryName, price, available, allowedSlotIds,
-  description, imageUrl, maxQuantity, categories, slots, deleteAction,
+  description, imageUrl, maxQuantity, stock, soldQuantity, categories, slots, deleteAction,
 }: ProductRowProps) {
   const [editing, setEditing] = useState(false)
   const stopEditing = useCallback(() => setEditing(false), [])
@@ -35,10 +37,10 @@ export function ProductRow({
   if (editing) {
     return (
       <tr className="border-b border-border last:border-0">
-        <td colSpan={5} className="px-4 py-3">
+        <td colSpan={6} className="px-4 py-3">
           <EditProductForm
             id={id}
-            defaults={{ name, description, price, categoryId, imageUrl, maxQuantity, allowedSlotIds }}
+            defaults={{ name, description, price, categoryId, imageUrl, maxQuantity, stock, allowedSlotIds }}
             categories={categories}
             slots={slots}
             onDone={stopEditing}
@@ -48,11 +50,19 @@ export function ProductRow({
     )
   }
 
+  const stockDisplay = stock
+    ? `${soldQuantity}/${stock}`
+    : '∞'
+  const stockLow = stock ? soldQuantity >= parseInt(stock) * 0.8 : false
+
   return (
     <tr className="border-b border-border last:border-0 hover:bg-muted/20">
       <td className="py-3 px-4 font-medium">{name}</td>
       <td className="py-3 px-4 text-muted-foreground text-sm">{categoryName}</td>
       <td className="py-3 px-4 text-right font-mono text-sm">{parseFloat(price).toFixed(2)} €</td>
+      <td className={`py-3 px-4 text-center font-mono text-sm ${stockLow ? 'text-warning font-bold' : 'text-muted-foreground'}`}>
+        {stockDisplay}
+      </td>
       <td className="py-3 px-4 text-center">
         <form action={toggleProductAvailabilityAction}>
           <input type="hidden" name="id" value={id} />

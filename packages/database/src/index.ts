@@ -19,7 +19,7 @@ export type {
   OrderItem,
   OrderStatus,
 } from '@prisma/client'
-export { SlotFullError, SlotNotFoundError } from './queries/orders'
+export { SlotFullError, SlotNotFoundError, ProductStockError } from './queries/orders'
 
 export * from './queries/products'
 export * from './queries/categories'

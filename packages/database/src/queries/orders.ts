@@ -40,6 +40,9 @@ export class SlotFullError extends Error {
 export class SlotNotFoundError extends Error {
   constructor() { super('SLOT_NOT_FOUND') }
 }
+export class ProductStockError extends Error {
+  constructor(public readonly productId: string) { super('PRODUCT_STOCK_EXCEEDED') }
+}
 
 export async function createOrder(data: {
   customerName: string
@@ -60,6 +63,21 @@ export async function createOrder(data: {
         where: { pickupSlotId: data.pickupSlotId, status: { not: 'CANCELLED' } },
       })
       if (activeCount >= slot.capacity) throw new SlotFullError()
+    }
+
+    for (const item of data.items) {
+      const product = await tx.product.findUnique({
+        where: { id: item.productId },
+        select: { stock: true },
+      })
+      if (product?.stock !== null && product?.stock !== undefined) {
+        const soldResult = await tx.orderItem.aggregate({
+          where: { productId: item.productId, order: { status: { not: 'CANCELLED' } } },
+          _sum: { quantity: true },
+        })
+        const sold = soldResult._sum.quantity ?? 0
+        if (sold + item.quantity > product.stock) throw new ProductStockError(item.productId)
+      }
     }
 
     return tx.order.create({

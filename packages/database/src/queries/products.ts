@@ -15,12 +15,22 @@ export async function getProductById(id: string) {
   })
 }
 
+export async function getProductSoldQuantities(): Promise<Record<string, number>> {
+  const rows = await db.orderItem.groupBy({
+    by: ['productId'],
+    where: { order: { status: { not: 'CANCELLED' } } },
+    _sum: { quantity: true },
+  })
+  return Object.fromEntries(rows.map((r) => [r.productId, r._sum.quantity ?? 0]))
+}
+
 export async function createProduct(data: {
   name: string
   description?: string
   price: number
   imageUrl?: string
   maxQuantity?: number
+  stock?: number
   categoryId: string
   allowedSlotIds: string[]
 }) {
@@ -43,6 +53,7 @@ export async function updateProduct(
     imageUrl: string
     available: boolean
     maxQuantity: number
+    stock: number | null
     categoryId: string
     allowedSlotIds: string[]
   }>

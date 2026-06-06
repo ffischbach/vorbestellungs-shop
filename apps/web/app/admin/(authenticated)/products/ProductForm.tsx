@@ -20,6 +20,7 @@ interface ProductFieldsProps {
     categoryId: string
     imageUrl: string
     maxQuantity: string
+    stock: string
     allowedSlotIds: string[]
   }
 }
@@ -53,6 +54,10 @@ function ProductFields({ categories, slots, defaults }: ProductFieldsProps) {
         <div>
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Max. Menge pro Bestellung</Label>
           <Input name="maxQuantity" type="number" min="1" placeholder="unbegrenzt" defaultValue={defaults?.maxQuantity} className="mt-1" />
+        </div>
+        <div>
+          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Gesamtbestand</Label>
+          <Input name="stock" type="number" min="1" placeholder="unbegrenzt" defaultValue={defaults?.stock} className="mt-1" />
         </div>
         <div className="md:col-span-2">
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Beschreibung</Label>
@@ -91,6 +96,7 @@ export function CreateProductForm({ categories, slots }: { categories: Category[
   const [key, setKey] = useState(0)
 
   useEffect(() => {
+    // eslint-disable-next-line react-compiler/react-compiler
     if (state && 'success' in state) setKey((k) => k + 1)
   }, [state])
 

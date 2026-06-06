@@ -1,4 +1,4 @@
-import { getProducts, getCategories, getPickupSlots } from '@repo/database'
+import { getProducts, getCategories, getPickupSlots, getProductSoldQuantities } from '@repo/database'
 import { deleteProductAction } from '@/app/actions/admin'
 import { CreateProductForm } from './ProductForm'
 import { ProductRow } from './ProductRow'
@@ -8,10 +8,11 @@ export default async function ProductsPage({
 }: {
   searchParams: Promise<{ error?: string }>
 }) {
-  const [products, categories, slots] = await Promise.all([
+  const [products, categories, slots, soldQuantities] = await Promise.all([
     getProducts(),
     getCategories(),
     getPickupSlots(),
+    getProductSoldQuantities(),
   ])
   const { error } = await searchParams
 
@@ -41,6 +42,7 @@ export default async function ProductsPage({
                 <th className="text-left py-2 px-4 font-medium text-muted-foreground">Name</th>
                 <th className="text-left py-2 px-4 font-medium text-muted-foreground">Kategorie</th>
                 <th className="text-right py-2 px-4 font-medium text-muted-foreground">Preis</th>
+                <th className="text-center py-2 px-4 font-medium text-muted-foreground">Bestand</th>
                 <th className="text-center py-2 px-4 font-medium text-muted-foreground">Status</th>
                 <th className="py-2 px-4 w-44" />
               </tr>
@@ -58,6 +60,8 @@ export default async function ProductsPage({
                   description={product.description ?? ''}
                   imageUrl={product.imageUrl ?? ''}
                   maxQuantity={product.maxQuantity?.toString() ?? ''}
+                  stock={product.stock?.toString() ?? ''}
+                  soldQuantity={soldQuantities[product.id] ?? 0}
                   categories={categoryOptions}
                   slots={slotOptions}
                   deleteAction={deleteProductAction}
