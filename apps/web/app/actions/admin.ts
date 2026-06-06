@@ -12,6 +12,7 @@ import {
   deleteProduct,
   getProductById,
   updateOrderStatus,
+  upsertClubConfig,
 } from '@repo/database'
 import { deleteFile } from '@/lib/storage'
 import { revalidatePath } from 'next/cache'
@@ -238,6 +239,47 @@ export async function deleteProductAction(formData: FormData): Promise<void> {
     try { await deleteFile(product.imageUrl) } catch { /* S3-Fehler soll DB-Erfolg nicht überschreiben */ }
   }
   revalidatePath('/admin/products')
+}
+
+// =============================================================================
+// Vereinseinstellungen
+// =============================================================================
+
+export async function updateClubConfigAction(
+  _: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const clubName = formData.get('clubName')?.toString().trim()
+  const eventName = formData.get('eventName')?.toString().trim()
+  const eventDate = formData.get('eventDate')?.toString().trim()
+  const contactEmail = formData.get('contactEmail')?.toString().trim()
+  const primaryColor = formData.get('primaryColor')?.toString().trim()
+  const accentColor = formData.get('accentColor')?.toString().trim()
+
+  if (!clubName || !eventName || !eventDate || !contactEmail || !primaryColor || !accentColor) {
+    return { error: 'Alle Felder sind Pflicht.' }
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) {
+    return { error: 'Datum muss im Format JJJJ-MM-TT angegeben werden.' }
+  }
+
+  if (!/^#[0-9a-fA-F]{6}$/.test(primaryColor) || !/^#[0-9a-fA-F]{6}$/.test(accentColor)) {
+    return { error: 'Farben müssen als Hex-Wert (#rrggbb) angegeben werden.' }
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(contactEmail)) {
+    return { error: 'Ungültige E-Mail-Adresse.' }
+  }
+
+  try {
+    await upsertClubConfig({ clubName, eventName, eventDate, contactEmail, primaryColor, accentColor })
+    revalidatePath('/', 'layout')
+    return { success: true }
+  } catch {
+    return { error: 'Einstellungen konnten nicht gespeichert werden.' }
+  }
 }
 
 // =============================================================================
