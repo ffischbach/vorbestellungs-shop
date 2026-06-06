@@ -12,10 +12,10 @@ VERSION=$VERSION $COMPOSE pull app
 # App mit neuem Image starten (Migrations laufen automatisch im Entrypoint)
 VERSION=$VERSION $COMPOSE up -d --no-deps app
 
-# Auf healthy warten (max 60s)
+# Auf healthy warten (max 150s)
 echo "[deploy] Warte auf Health-Check..."
 i=0
-until $COMPOSE ps app | grep -q "healthy" || [ $i -ge 12 ]; do
+until $COMPOSE ps app | grep -q "healthy" || [ $i -ge 30 ]; do
   sleep 5
   i=$((i + 1))
 done
@@ -23,6 +23,6 @@ done
 if $COMPOSE ps app | grep -q "healthy"; then
   echo "[deploy] Erfolgreich deployed: $VERSION"
 else
-  echo "[deploy] Health-Check fehlgeschlagen nach 60s" >&2
+  echo "[deploy] Health-Check fehlgeschlagen nach 150s" >&2
   exit 1
 fi
