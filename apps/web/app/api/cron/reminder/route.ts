@@ -47,8 +47,11 @@ export async function POST(request: NextRequest) {
     })
   )
 
-  const sent = results.filter((r) => r.status === 'fulfilled').length
-  const failed = results.filter((r) => r.status === 'rejected').length
+  const sent = results.filter(
+    (r): r is PromiseFulfilledResult<{ success: true; messageId: string }> =>
+      r.status === 'fulfilled' && r.value.success,
+  ).length
+  const failed = results.length - sent
 
   return NextResponse.json({ sent, failed })
 }
