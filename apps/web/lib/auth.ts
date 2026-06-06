@@ -6,6 +6,7 @@ import { db } from '@repo/database'
 
 export const auth = betterAuth({
   database: prismaAdapter(db, { provider: 'postgresql' }),
+  baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:3000',
   emailAndPassword: {
     enabled: true,
     // Sign-up in production deaktiviert — nur via pnpm admin:create (programmatisch) oder

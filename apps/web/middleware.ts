@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Cookie-Name, den Better Auth standardmäßig setzt
-const SESSION_COOKIE = 'better-auth.session_token'
+// Better Auth setzt den __Secure- Präfix wenn die baseURL mit https:// beginnt.
+// Der Präfix ist Teil des Cookie-Namens und muss hier exakt übereinstimmen.
+const SESSION_COOKIE = (process.env.BETTER_AUTH_URL ?? 'http://localhost:3000').startsWith('https://')
+  ? '__Secure-better-auth.session_token'
+  : 'better-auth.session_token'
 
 const PUBLIC_ADMIN_PATHS = ['/admin/login', '/admin/setup', '/admin/login/totp']
 
