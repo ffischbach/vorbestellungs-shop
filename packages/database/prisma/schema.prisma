@@ -70,14 +70,15 @@ enum OrderStatus {
 // Singleton-Tabelle (immer genau ein Datensatz mit id = "singleton").
 // Überschreibt die Env-Var-Defaults aus club.config.ts.
 model ClubConfig {
-  id           String  @id @default("singleton")
-  clubName     String?
-  logoUrl      String?
-  primaryColor String?
-  accentColor  String?
-  eventName    String?
-  eventDate    String?
-  contactEmail String?
+  id             String   @id @default("singleton")
+  clubName       String?
+  logoUrl        String?
+  primaryColor   String?
+  accentColor    String?
+  eventName      String?
+  eventDate      String?
+  contactEmail   String?
+  paymentMethods String[]
 }
 
 // Better Auth — Pflicht-Modelle für den Prisma Adapter

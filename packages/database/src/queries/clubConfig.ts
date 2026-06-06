@@ -14,6 +14,7 @@ export async function upsertClubConfig(data: {
   eventName?: string
   eventDate?: string
   contactEmail?: string
+  paymentMethods?: string[]
 }) {
   return db.clubConfig.upsert({
     where: { id: SINGLETON_ID },

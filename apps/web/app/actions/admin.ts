@@ -255,6 +255,9 @@ export async function updateClubConfigAction(
   const contactEmail = formData.get('contactEmail')?.toString().trim()
   const primaryColor = formData.get('primaryColor')?.toString().trim()
   const accentColor = formData.get('accentColor')?.toString().trim()
+  const paymentMethods = formData.getAll('paymentMethods')
+    .map((v) => v.toString().trim())
+    .filter((v) => v.length > 0)
 
   if (!clubName || !eventName || !eventDate || !contactEmail || !primaryColor || !accentColor) {
     return { error: 'Alle Felder sind Pflicht.' }
@@ -273,8 +276,12 @@ export async function updateClubConfigAction(
     return { error: 'Ungültige E-Mail-Adresse.' }
   }
 
+  if (paymentMethods.length === 0) {
+    return { error: 'Mindestens eine Zahlungsart ist Pflicht.' }
+  }
+
   try {
-    await upsertClubConfig({ clubName, eventName, eventDate, contactEmail, primaryColor, accentColor })
+    await upsertClubConfig({ clubName, eventName, eventDate, contactEmail, primaryColor, accentColor, paymentMethods })
     revalidatePath('/', 'layout')
     return { success: true }
   } catch {

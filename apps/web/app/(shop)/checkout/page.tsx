@@ -15,6 +15,7 @@ export default async function CheckoutPage() {
       eventDate={new Date(clubConfig.eventDate).toLocaleDateString('de-DE')}
       logoUrl={clubConfig.logoUrl}
       slots={timeSlots}
+      paymentMethods={clubConfig.paymentMethods}
     />
   )
 }

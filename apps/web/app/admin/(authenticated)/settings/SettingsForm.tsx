@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useState, useActionState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,6 +9,8 @@ import type { ClubConfig } from '@repo/config'
 
 export function SettingsForm({ current }: { current: ClubConfig }) {
   const [state, action, isPending] = useActionState(updateClubConfigAction, null)
+  const [paymentMethods, setPaymentMethods] = useState<string[]>(current.paymentMethods)
+  const [newMethod, setNewMethod] = useState('')
 
   return (
     <form action={action} className="space-y-8">
@@ -139,6 +141,60 @@ export function SettingsForm({ current }: { current: ClubConfig }) {
               />
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Zahlungsarten vor Ort</h2>
+        <div className="max-w-lg space-y-2">
+          {paymentMethods.map((method, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <input type="hidden" name="paymentMethods" value={method} />
+              <span className="flex-1 text-sm border border-input bg-background px-3 py-2">{method}</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setPaymentMethods((prev) => prev.filter((_, i) => i !== index))}
+                className="text-destructive hover:text-destructive"
+              >
+                Entfernen
+              </Button>
+            </div>
+          ))}
+          <div className="flex items-center gap-2 pt-1">
+            <Input
+              value={newMethod}
+              onChange={(e) => setNewMethod(e.target.value)}
+              placeholder="z.B. PayPal"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  const trimmed = newMethod.trim()
+                  if (trimmed) {
+                    setPaymentMethods((prev) => [...prev, trimmed])
+                    setNewMethod('')
+                  }
+                }
+              }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const trimmed = newMethod.trim()
+                if (trimmed) {
+                  setPaymentMethods((prev) => [...prev, trimmed])
+                  setNewMethod('')
+                }
+              }}
+            >
+              Hinzufügen
+            </Button>
+          </div>
+          {paymentMethods.length === 0 && (
+            <p className="text-xs text-destructive">Mindestens eine Zahlungsart ist erforderlich.</p>
+          )}
         </div>
       </section>
 

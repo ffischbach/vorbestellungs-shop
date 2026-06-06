@@ -13,6 +13,7 @@ interface CheckoutPageClientProps {
   eventDate: string
   logoUrl?: string
   slots: TimeSlot[]
+  paymentMethods: string[]
 }
 
 export function CheckoutPageClient({
@@ -20,6 +21,7 @@ export function CheckoutPageClient({
   eventDate,
   logoUrl,
   slots,
+  paymentMethods,
 }: CheckoutPageClientProps) {
   const { items, totalAmount, clearCart, selectedSlotId, setSelectedSlotId } = useCart()
   const [step, setStep] = useState(1)
@@ -284,9 +286,9 @@ export function CheckoutPageClient({
                   Zahlungsmethoden vor Ort:
                 </p>
                 <ul className="mt-2 text-sm text-muted-foreground space-y-1">
-                  <li>• Bargeld</li>
-                  <li>• EC-Karte</li>
-                  <li>• Kreditkarte</li>
+                  {paymentMethods.map((method) => (
+                    <li key={method}>• {method}</li>
+                  ))}
                 </ul>
               </div>
             </div>
