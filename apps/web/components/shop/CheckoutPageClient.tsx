@@ -41,6 +41,7 @@ export function CheckoutPageClient({
   const [orderComplete, setOrderComplete] = useState(false)
   const [orderNumber, setOrderNumber] = useState('')
   const [capturedTotal, setCapturedTotal] = useState(0)
+  const [capturedSlotId, setCapturedSlotId] = useState<string | undefined>()
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
@@ -70,6 +71,7 @@ export function CheckoutPageClient({
     }
 
     setCapturedTotal(totalAmount)
+    setCapturedSlotId(effectiveSlotId)
     clearCart()
     setOrderNumber(result.orderNumber)
     setOrderComplete(true)
@@ -132,7 +134,7 @@ export function CheckoutPageClient({
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Abholzeit</p>
                 <p className="text-lg font-bold text-foreground">
-                  {slots.find((s) => s.id === effectiveSlotId)?.label}
+                  {slots.find((s) => s.id === capturedSlotId)?.label}
                 </p>
               </div>
               <div>

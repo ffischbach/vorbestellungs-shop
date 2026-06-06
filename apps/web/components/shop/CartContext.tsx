@@ -87,7 +87,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setItems(
           result.data.map((item) => ({
             ...item,
-            id: `${item.productId}-${Date.now()}`,
+            id: crypto.randomUUID(),
           }))
         )
       }
