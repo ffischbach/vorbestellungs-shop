@@ -1,5 +1,5 @@
 import { db } from '../index'
-import type { OrderStatus } from '@prisma/client'
+import { Prisma, type OrderStatus } from '@prisma/client'
 
 export async function getOrders(filters?: { status?: OrderStatus; date?: Date }) {
   let dateFilter: { pickupSlot: { startTime: { gte: Date; lt: Date } } } | undefined
@@ -98,7 +98,7 @@ export async function createOrder(data: {
         pickupSlot: true,
       },
     })
-  })
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
 }
 
 export async function updateOrderStatus(id: string, status: OrderStatus) {
