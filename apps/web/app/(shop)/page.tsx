@@ -1,9 +1,40 @@
-// TODO: Produktübersicht — Phase 4
-export default function ShopPage() {
+import { getProducts, getPickupSlots, getCategories } from '@repo/database'
+import clubConfig from '@/club.config'
+import { ShopPageClient } from '@/components/shop/ShopPageClient'
+import { buildTimeSlots } from '@/lib/slots'
+
+export const dynamic = 'force-dynamic'
+
+export default async function ShopPage() {
+  const [products, slots, categories] = await Promise.all([
+    getProducts(),
+    getPickupSlots(),
+    getCategories(),
+  ])
+
+  const timeSlots = buildTimeSlots(slots)
+
   return (
-    <main className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold">Produkte</h1>
-      <p className="text-muted-foreground mt-2">Vorbestellungsshop — coming soon.</p>
-    </main>
+    <ShopPageClient
+      eventName={clubConfig.eventName}
+      eventDate={new Date(clubConfig.eventDate).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })}
+      logoUrl={clubConfig.logoUrl}
+      slots={timeSlots}
+      categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+      products={products.map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        price: Number(p.price),
+        imageUrl: p.imageUrl,
+        category: { id: p.category.id, name: p.category.name },
+        allowedSlotIds: p.allowedSlots.map((s) => s.id),
+      }))}
+    />
   )
 }

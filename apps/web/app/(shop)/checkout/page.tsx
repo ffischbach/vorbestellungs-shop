@@ -1,8 +1,20 @@
-// TODO: Checkout — Phase 4
-export default function CheckoutPage() {
+import { getPickupSlots } from '@repo/database'
+import clubConfig from '@/club.config'
+import { CheckoutPageClient } from '@/components/shop/CheckoutPageClient'
+import { buildTimeSlots } from '@/lib/slots'
+
+export const dynamic = 'force-dynamic'
+
+export default async function CheckoutPage() {
+  const slots = await getPickupSlots()
+  const timeSlots = buildTimeSlots(slots)
+
   return (
-    <main className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold">Bestellung abschließen</h1>
-    </main>
+    <CheckoutPageClient
+      eventName={clubConfig.eventName}
+      eventDate={new Date(clubConfig.eventDate).toLocaleDateString('de-DE')}
+      logoUrl={clubConfig.logoUrl}
+      slots={timeSlots}
+    />
   )
 }

@@ -1,8 +1,17 @@
-// TODO: Warenkorb — Phase 4
-export default function CartPage() {
+import clubConfig from '@/club.config'
+import CartPageClient from '@/components/shop/CartPageClient'
+
+export default async function CartPage() {
   return (
-    <main className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold">Warenkorb</h1>
-    </main>
+    <CartPageClient
+      eventName={clubConfig.eventName}
+      eventDate={new Date(clubConfig.eventDate).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })}
+      logoUrl={clubConfig.logoUrl}
+    />
   )
 }
