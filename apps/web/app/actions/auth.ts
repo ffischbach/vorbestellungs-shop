@@ -6,6 +6,7 @@ import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import logger from '@/lib/logger'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { hashPassword } from '@better-auth/utils/password'
 
 async function getClientIp(): Promise<string> {
   const h = await headers()
@@ -158,8 +159,29 @@ export async function setupAdminAction(
     return { error: 'Passwort muss mindestens 8 Zeichen haben.' }
   }
 
-  const result = await auth.api.signUpEmail({ body: { email, password, name } })
-  if (!result?.user) {
+  // Direkt in DB anlegen — umgeht disableSignUp ohne Env-Var-Workaround.
+  // Entspricht exakt dem, was Better Auth intern bei signUpEmail tut.
+  try {
+    const userId = crypto.randomUUID()
+    const now = new Date()
+    const hashed = await hashPassword(password)
+    await db.$transaction([
+      db.user.create({
+        data: { id: userId, name, email, emailVerified: false, createdAt: now, updatedAt: now },
+      }),
+      db.account.create({
+        data: {
+          id: crypto.randomUUID(),
+          accountId: userId,
+          providerId: 'credential',
+          userId,
+          password: hashed,
+          createdAt: now,
+          updatedAt: now,
+        },
+      }),
+    ])
+  } catch {
     authLogger.error({ email }, 'admin_setup_failure')
     return { error: 'Account konnte nicht erstellt werden.' }
   }

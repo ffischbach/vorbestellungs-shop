@@ -9,9 +9,9 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:3000',
   emailAndPassword: {
     enabled: true,
-    // Sign-up in production deaktiviert — nur via pnpm admin:create (programmatisch) oder
-    // ADMIN_SIGNUP_ENABLED=true temporär setzen, um den ersten Account anzulegen.
-    disableSignUp: process.env.NODE_ENV === 'production' && process.env.ADMIN_SIGNUP_ENABLED !== 'true',
+    // Sign-up über den HTTP-Endpunkt ist immer deaktiviert.
+    // Der erste Admin wird ausschließlich über /admin/setup angelegt (direkt in DB, kein Auth-Endpunkt).
+    disableSignUp: process.env.NODE_ENV === 'production',
   },
   // nextCookies muss als letztes Plugin stehen — es liest die Set-Cookie-Header
   // aller vorherigen Plugins aus und schreibt sie via next/headers cookies() in den Browser.

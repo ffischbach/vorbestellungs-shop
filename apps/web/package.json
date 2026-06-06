@@ -8,13 +8,12 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
-    "admin:create": "tsx scripts/create-admin.ts",
-    "admin:setup-totp": "tsx scripts/setup-totp.ts"
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1062.0",
     "@base-ui/react": "^1.5.0",
+    "@better-auth/utils": "^0.4.1",
     "@repo/config": "workspace:*",
     "@repo/database": "workspace:*",
     "@repo/email": "workspace:*",
