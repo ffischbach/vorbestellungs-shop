@@ -31,11 +31,13 @@ export interface CartItemData {
   allowedSlotIds: string[]
 }
 
+type SyncResult = { success: true } | { success: false; error: string }
+
 interface CartContextType {
   items: CartItem[]
   sessionId: string
   isLoading: boolean
-  setProductQuantity: (product: CartItemData, quantity: number) => void
+  setProductQuantity: (product: CartItemData, quantity: number) => Promise<SyncResult>
   updateQuantity: (itemId: string, quantity: number) => void
   removeItem: (itemId: string) => void
   clearCart: () => void
@@ -104,8 +106,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const setProductQuantity = useCallback((product: CartItemData, quantity: number) => {
+  const setProductQuantity = useCallback(async (product: CartItemData, quantity: number): Promise<SyncResult> => {
     const sid = sessionIdRef.current
+    const previousItems = itemsRef.current
+
     setItems((curr) => {
       const match = (i: CartItem) =>
         i.productId === product.productId && i.variantName === product.variantName
@@ -118,7 +122,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...curr, { ...product, id: `${Date.now()}-${Math.random()}`, quantity }]
     })
-    if (sid) syncCartReservation(sid, product.productId, quantity)
+
+    if (!sid) return { success: true }
+
+    const result = await syncCartReservation(sid, product.productId, quantity)
+    if (!result.success) {
+      setItems(previousItems)
+    }
+    return result
   }, [])
 
   const updateQuantity = useCallback((itemId: string, quantity: number) => {

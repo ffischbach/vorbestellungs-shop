@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { Minus, Plus, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import { useCart } from './CartContext'
 
 interface ProductCardProps {
@@ -33,6 +34,7 @@ export function ProductCard({
   index = 0,
 }: ProductCardProps) {
   const { items, setProductQuantity } = useCart()
+  const [stockError, setStockError] = useState(false)
 
   const cartItem = items.find((i) => i.productId === id)
   const quantity = cartItem?.quantity ?? 0
@@ -53,9 +55,13 @@ export function ProductCard({
 
   const productData = { productId: id, name, price, imageUrl, allowedSlotIds }
 
-  const handleIncrement = () => {
+  const handleIncrement = async () => {
     if (!canIncrement) return
-    setProductQuantity(productData, quantity + 1)
+    const result = await setProductQuantity(productData, quantity + 1)
+    if (!result.success) {
+      setStockError(true)
+      setTimeout(() => setStockError(false), 3000)
+    }
   }
 
   const handleDecrement = () => {
@@ -101,7 +107,12 @@ export function ProductCard({
         </div>
 
         {/* Stock indicators */}
-        {showRemaining && (
+        {stockError && (
+          <p className="mb-2 text-xs font-medium text-destructive">
+            Nicht mehr ausreichend verfügbar
+          </p>
+        )}
+        {!stockError && showRemaining && (
           <p className="mb-2 text-xs font-medium text-amber-600 dark:text-amber-400">
             Noch {remaining} verfügbar
           </p>
