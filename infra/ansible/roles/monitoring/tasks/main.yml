@@ -73,12 +73,6 @@
     owner: "{{ deploy_user }}"
     mode: '0600'
 
-- name: UFW — Grafana (Port 3000) erlauben
-  ufw:
-    rule: allow
-    port: '3000'
-    proto: tcp
-
 - name: UFW — Loki (Port 3100) nur aus privatem Netz erlauben
   ufw:
     rule: allow

@@ -32,14 +32,6 @@ resource "hcloud_firewall" "monitoring" {
     source_ips = var.admin_ips
   }
 
-  # Grafana nur für Admins erreichbar
-  rule {
-    direction  = "in"
-    port       = "3000"
-    protocol   = "tcp"
-    source_ips = var.admin_ips
-  }
-
   # Loki empfängt Logs vom App-Server (via Private Network)
   rule {
     direction  = "in"
