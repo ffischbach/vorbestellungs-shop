@@ -8,6 +8,21 @@ scrape_configs:
       - targets: ["{{ app_server_ip }}:9100"]
         labels:
           instance: shop
+      - targets: ["host-gateway:9100"]
+        labels:
+          instance: monitoring
+
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["{{ app_server_ip }}:8080"]
+        labels:
+          instance: shop
+
+  - job_name: postgres
+    static_configs:
+      - targets: ["{{ app_server_ip }}:9187"]
+        labels:
+          instance: shop
 
   - job_name: blackbox
     metrics_path: /probe

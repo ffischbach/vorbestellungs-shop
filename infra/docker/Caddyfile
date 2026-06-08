@@ -1,4 +1,11 @@
 {$SHOP_DOMAIN} {
+  log {
+    output stdout
+    format json {
+      time_format iso8601
+    }
+  }
+
   # Deploy-Webhook — nur intern erreichbar über Caddy, kein extra Port nötig
   handle_path /_deploy/* {
     reverse_proxy webhook:9000

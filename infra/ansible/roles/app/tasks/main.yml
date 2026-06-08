@@ -68,6 +68,20 @@
     owner: "{{ deploy_user }}"
     mode: '0644'
 
+- name: postgres-exporter-Verzeichnis anlegen
+  file:
+    path: "{{ app_dir }}/postgres-exporter"
+    state: directory
+    owner: "{{ deploy_user }}"
+    mode: '0750'
+
+- name: postgres-exporter Custom Queries deployen
+  copy:
+    src: "{{ playbook_dir }}/../../docker/postgres-exporter/queries.yaml"
+    dest: "{{ app_dir }}/postgres-exporter/queries.yaml"
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
 - name: Promtail-Verzeichnis anlegen
   file:
     path: "{{ app_dir }}/promtail"
@@ -110,6 +124,17 @@
     owner: "70"
     group: "70"
     mode: '0700'
+
+- name: UFW — Exporter-Ports für Prometheus freigeben (node-exporter, cadvisor, postgres-exporter)
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+    src: "{{ monitoring_server_ip }}"
+  loop:
+    - '9100'
+    - '8080'
+    - '9187'
 
 - name: Bei GHCR einloggen
   become_user: "{{ deploy_user }}"

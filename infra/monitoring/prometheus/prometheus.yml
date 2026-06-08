@@ -2,8 +2,9 @@
 # Diese Datei ist nur zur Dokumentation — nicht direkt verwenden.
 #
 # Variablen die Ansible ersetzt:
-#   {{ app_server_ip }}  — IP des App-Servers
-#   {{ shop_domain }}    — Domain des Shops
+#   {{ app_server_ip }}              — öffentliche IP des App-Servers
+#   {{ shop_domain }}                — Domain des Shops
+#   host-gateway                     — löst sich im Prometheus-Container zur Host-IP auf (Docker extra_hosts)
 
 global:
   scrape_interval: 30s
@@ -13,6 +14,21 @@ scrape_configs:
   - job_name: node
     static_configs:
       - targets: ["APP_SERVER_IP:9100"]
+        labels:
+          instance: shop
+      - targets: ["host-gateway:9100"]
+        labels:
+          instance: monitoring
+
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["APP_SERVER_IP:8080"]
+        labels:
+          instance: shop
+
+  - job_name: postgres
+    static_configs:
+      - targets: ["APP_SERVER_IP:9187"]
         labels:
           instance: shop
 

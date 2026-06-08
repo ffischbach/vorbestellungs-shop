@@ -33,6 +33,8 @@ services:
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=30d
+    extra_hosts:
+      - "host-gateway:host-gateway"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/blackbox.yml:/etc/prometheus/blackbox.yml:ro
@@ -44,6 +46,17 @@ services:
     command: --config.file=/etc/blackbox/blackbox.yml
     volumes:
       - ./prometheus/blackbox.yml:/etc/blackbox/blackbox.yml:ro
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    restart: unless-stopped
+    command:
+      - --path.rootfs=/host
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|run)($|/)
+    network_mode: host
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
 
 volumes:
   grafana_data:

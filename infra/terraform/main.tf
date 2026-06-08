@@ -90,6 +90,22 @@ resource "hcloud_firewall" "shop" {
     protocol   = "tcp"
     source_ips = [hcloud_network.main.ip_range]
   }
+
+  # cAdvisor — nur für Monitoring-Server (via Private Network)
+  rule {
+    direction  = "in"
+    port       = "8080"
+    protocol   = "tcp"
+    source_ips = [hcloud_network.main.ip_range]
+  }
+
+  # postgres-exporter — nur für Monitoring-Server (via Private Network)
+  rule {
+    direction  = "in"
+    port       = "9187"
+    protocol   = "tcp"
+    source_ips = [hcloud_network.main.ip_range]
+  }
 }
 
 resource "hcloud_server" "shop" {

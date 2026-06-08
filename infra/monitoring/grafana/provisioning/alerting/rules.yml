@@ -6,6 +6,9 @@ groups:
     folder: Shop
     interval: 1m
     rules:
+
+      # ── Erreichbarkeit ───────────────────────────────────────────────────────
+
       - uid: app-down
         title: App nicht erreichbar
         condition: threshold
@@ -21,17 +24,137 @@ groups:
               to: 0
             datasourceUid: prometheus
             model:
-              expr: probe_success{job="blackbox"} == 0
+              expr: probe_success{job="blackbox"}
           - refId: threshold
             relativeTimeRange:
-              from: 300
+              from: 0
               to: 0
             datasourceUid: "__expr__"
             model:
+              refId: threshold
               type: threshold
               conditions:
-                - evaluator: { params: [0], type: gt }
+                - evaluator: { params: [1], type: lt }
                   query: { params: [A] }
+
+      - uid: slow-response
+        title: Langsame Antwortzeit
+        condition: threshold
+        for: 5m
+        annotations:
+          summary: "Antwortzeit {{ $value | humanizeDuration }} — Grenzwert 3s"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: probe_duration_seconds{job="blackbox"}
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [3], type: gt }
+                  query: { params: [A] }
+
+      - uid: tls-expiry
+        title: TLS-Zertifikat läuft bald ab
+        condition: threshold
+        for: 1m
+        annotations:
+          summary: "TLS-Zertifikat läuft in {{ printf \"%.0f\" $value }} Tagen ab"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: (probe_ssl_earliest_cert_expiry - time()) / 86400
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [14], type: lt }
+                  query: { params: [A] }
+
+      # ── HTTP-Fehler (via Caddy Access Logs) ─────────────────────────────────
+
+      - uid: high-error-rate
+        title: Hohe Fehlerrate
+        condition: threshold
+        for: 5m
+        annotations:
+          summary: "Mehr als 10% 5xx-Antworten in den letzten 5 Minuten"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: loki
+            model:
+              expr: |
+                sum(rate({container="shop-caddy-1"} | json | logger="http.log.access" | status >= 500 [5m]))
+                / sum(rate({container="shop-caddy-1"} | json | logger="http.log.access" [5m]))
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [0.1], type: gt }
+                  query: { params: [A] }
+
+      - uid: error-log-spike
+        title: Fehler-Logs häufen sich
+        condition: threshold
+        for: 5m
+        annotations:
+          summary: "Mehr als 5 ERROR-Log-Einträge pro Minute in den letzten 5 Minuten"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: loki
+            model:
+              expr: |
+                sum(rate({container="shop-app-1", level="error"}[5m])) * 60
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [5], type: gt }
+                  query: { params: [A] }
+
+      # ── System-Ressourcen ────────────────────────────────────────────────────
 
       - uid: disk-full
         title: Disk-Auslastung hoch
@@ -53,21 +176,51 @@ groups:
                   / node_filesystem_size_bytes{mountpoint="/",fstype!="tmpfs"})
           - refId: threshold
             relativeTimeRange:
-              from: 600
+              from: 0
               to: 0
             datasourceUid: "__expr__"
             model:
+              refId: threshold
               type: threshold
               conditions:
                 - evaluator: { params: [0.8], type: gt }
                   query: { params: [A] }
 
-      - uid: high-error-rate
-        title: Hohe Fehlerrate
+      - uid: cpu-high
+        title: CPU-Auslastung hoch
+        condition: threshold
+        for: 10m
+        annotations:
+          summary: "CPU auf {{ $labels.instance }}: {{ printf \"%.0f\" $value }}% Auslastung"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: |
+                100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [85], type: gt }
+                  query: { params: [A] }
+
+      - uid: ram-high
+        title: RAM-Auslastung hoch
         condition: threshold
         for: 5m
         annotations:
-          summary: "Mehr als 10% 5xx-Antworten in den letzten 5 Minuten"
+          summary: "RAM auf {{ $labels.instance }} zu {{ $value | humanizePercentage }} belegt"
         labels:
           severity: warning
         data:
@@ -75,20 +228,256 @@ groups:
             relativeTimeRange:
               from: 300
               to: 0
-            datasourceUid: loki
+            datasourceUid: prometheus
             model:
               expr: |
-                sum(rate({container="shop-app-1"} | json | status >= 500 [5m]))
-                / sum(rate({container="shop-app-1"} | json [5m])) > 0.1
+                1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)
           - refId: threshold
             relativeTimeRange:
-              from: 300
+              from: 0
               to: 0
             datasourceUid: "__expr__"
             model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [0.9], type: gt }
+                  query: { params: [A] }
+
+      - uid: container-oom
+        title: Container OOM-Kill
+        condition: threshold
+        for: 1m
+        annotations:
+          summary: "Container {{ $labels.name }} wurde wegen Speichermangel beendet (OOM)"
+        labels:
+          severity: critical
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: increase(container_oom_events_total{name!=""}[5m])
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
               type: threshold
               conditions:
                 - evaluator: { params: [0], type: gt }
+                  query: { params: [A] }
+
+      # ── Datenbank ────────────────────────────────────────────────────────────
+
+      - uid: postgres-down
+        title: PostgreSQL nicht erreichbar
+        condition: threshold
+        for: 2m
+        annotations:
+          summary: "PostgreSQL nicht erreichbar — Datenbankverbindung ausgefallen"
+        labels:
+          severity: critical
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: pg_up{job="postgres"}
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [1], type: lt }
+                  query: { params: [A] }
+
+      - uid: postgres-connections-high
+        title: PostgreSQL Verbindungen hoch
+        condition: threshold
+        for: 5m
+        annotations:
+          summary: "PostgreSQL hat {{ printf \"%.0f\" $value }} aktive Verbindungen (Limit: 100)"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: pg_stat_database_numbackends{datname="shop"}
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [70], type: gt }
+                  query: { params: [A] }
+
+      # ── Backup & Cron (Deadman's Switch) ────────────────────────────────────
+
+      - uid: backup-missing
+        title: Kein Backup in den letzten 26 Stunden
+        condition: threshold
+        noDataState: OK
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          summary: "Kein erfolgreicher Backup-Lauf in den letzten 26 Stunden"
+        labels:
+          severity: critical
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 93600
+              to: 0
+            datasourceUid: loki
+            model:
+              expr: absent_over_time({container="shop-backup-1"} |= "Backup complete" [26h])
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [0], type: gt }
+                  query: { params: [A] }
+
+      - uid: cron-reminder-missing
+        title: Reminder-Cron nicht ausgeführt
+        condition: threshold
+        noDataState: OK
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          summary: "Der Reminder-Cron wurde in den letzten 25 Stunden nicht ausgeführt"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 90000
+              to: 0
+            datasourceUid: loki
+            model:
+              expr: absent_over_time({container="shop-app-1"} |= "Reminder-Mails werden versendet" [25h])
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [0], type: gt }
+                  query: { params: [A] }
+
+      - uid: cron-cleanup-missing
+        title: Cleanup-Cron nicht ausgeführt
+        condition: threshold
+        noDataState: OK
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          summary: "Der Cleanup-Cron wurde in den letzten 25 Stunden nicht ausgeführt"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 90000
+              to: 0
+            datasourceUid: loki
+            model:
+              expr: absent_over_time({container="shop-app-1"} |= "Reservierungen bereinigt" [25h])
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [0], type: gt }
+                  query: { params: [A] }
+
+      # ── Kundenfluss-Alerts ───────────────────────────────────────────────────
+
+      - uid: slot-nearly-full
+        title: Abholslot fast ausgebucht
+        condition: threshold
+        for: 2m
+        annotations:
+          summary: "Slot \"{{ $labels.slot_label }}\" ist zu {{ $value | humanizePercentage }} ausgebucht"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: slot_occupancy_occupancy_ratio
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [0.8], type: gt }
+                  query: { params: [A] }
+
+      - uid: slot-full-spike
+        title: Slot-voll-Fehler häufen sich
+        condition: threshold
+        for: 1m
+        annotations:
+          summary: "{{ printf \"%.0f\" $value }} Slot-voll-Fehler in 10 Minuten — ein Slot läuft über"
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: loki
+            model:
+              expr: sum(count_over_time({container="shop-app-1", event="slot_full"} [10m]))
+          - refId: threshold
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: threshold
+              type: threshold
+              conditions:
+                - evaluator: { params: [3], type: gt }
                   query: { params: [A] }
 
 policies:

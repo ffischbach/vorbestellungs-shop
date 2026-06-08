@@ -16,6 +16,7 @@
     - loki
     - grafana/provisioning/datasources
     - grafana/provisioning/alerting
+    - grafana/provisioning/dashboards
 
 - name: docker-compose.yml deployen
   copy:
@@ -56,6 +57,20 @@
   copy:
     src: "{{ playbook_dir }}/../../monitoring/grafana/provisioning/alerting/rules.yml"
     dest: /opt/monitoring/grafana/provisioning/alerting/rules.yml
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Grafana Dashboard-Provider deployen
+  copy:
+    src: "{{ playbook_dir }}/../../monitoring/grafana/provisioning/dashboards/dashboards.yml"
+    dest: /opt/monitoring/grafana/provisioning/dashboards/dashboards.yml
+    owner: "{{ deploy_user }}"
+    mode: '0644'
+
+- name: Grafana Shop-Dashboard deployen
+  copy:
+    src: "{{ playbook_dir }}/../../monitoring/grafana/provisioning/dashboards/shop-overview.json"
+    dest: /opt/monitoring/grafana/provisioning/dashboards/shop-overview.json
     owner: "{{ deploy_user }}"
     mode: '0644'
 

@@ -1,4 +1,6 @@
 # Wird von Ansible aus roles/monitoring/templates/contactpoints.yml.j2 generiert.
+# Diese Datei ist nur zur Dokumentation — nicht direkt verwenden.
+# Variablen die Ansible ersetzt: {{ alert_email }}
 
 apiVersion: 1
 
@@ -9,5 +11,5 @@ contactPoints:
       - uid: email-receiver
         type: email
         settings:
-          addresses: ALERT_EMAIL
+          addresses: "{{ alert_email }}"
           singleEmail: true

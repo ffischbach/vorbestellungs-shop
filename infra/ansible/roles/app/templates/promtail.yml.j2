@@ -23,6 +23,64 @@ scrape_configs:
             level: level
       - labels:
           level:
+      # IP-Adressen anonymisieren (letztes Oktett auf 0) — DSGVO
       - replace:
           expression: '(\d{1,3}\.\d{1,3}\.\d{1,3})\.\d{1,3}'
           replace: '${1}.0'
+      # Business-Event-Labels für direkte Stream-Filterung ohne inline JSON-Parsing.
+      # Jedes Label entspricht einem klar definierten Schritt im Kundenfluss.
+      - match:
+          selector: '{container="shop-app-1"} |= "Produkt in Warenkorb gelegt"'
+          stages:
+            - static_labels:
+                event: cart_add
+      - match:
+          selector: '{container="shop-app-1"} |= "Produkt aus Warenkorb entfernt"'
+          stages:
+            - static_labels:
+                event: cart_remove
+      - match:
+          selector: '{container="shop-app-1"} |= "Warenkorb geleert"'
+          stages:
+            - static_labels:
+                event: cart_clear
+      - match:
+          selector: '{container="shop-app-1"} |= "Bestellung wird verarbeitet"'
+          stages:
+            - static_labels:
+                event: checkout_start
+      - match:
+          selector: '{container="shop-app-1"} |= "Bestellung erfolgreich erstellt"'
+          stages:
+            - static_labels:
+                event: order_created
+      - match:
+          selector: '{container="shop-app-1"} |= "Bestätigungsmail versendet"'
+          stages:
+            - static_labels:
+                event: email_sent
+      - match:
+          selector: '{container="shop-app-1"} |= "E-Mail-Versand fehlgeschlagen"'
+          stages:
+            - static_labels:
+                event: email_failed
+      - match:
+          selector: '{container="shop-app-1"} |= "Slot ausgebucht"'
+          stages:
+            - static_labels:
+                event: slot_full
+      - match:
+          selector: '{container="shop-app-1"} |= "nicht ausreichend auf Lager"'
+          stages:
+            - static_labels:
+                event: out_of_stock
+      - match:
+          selector: '{container="shop-app-1"} |= "Reminder-Mails werden versendet"'
+          stages:
+            - static_labels:
+                event: cron_reminder
+      - match:
+          selector: '{container="shop-app-1"} |= "Reservierungen bereinigt"'
+          stages:
+            - static_labels:
+                event: cron_cleanup

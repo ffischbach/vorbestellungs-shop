@@ -1,0 +1,31 @@
+slot_occupancy:
+  query: |
+    SELECT
+      ps.label                                                              AS slot_label,
+      COALESCE(ps.capacity, 0)                                              AS capacity,
+      COUNT(o.id) FILTER (WHERE o.status != 'CANCELLED')                   AS active_orders,
+      CASE
+        WHEN ps.capacity IS NOT NULL AND ps.capacity > 0
+        THEN ROUND(
+          (COUNT(o.id) FILTER (WHERE o.status != 'CANCELLED'))::numeric
+          / ps.capacity, 2
+        )
+        ELSE 0
+      END                                                                   AS occupancy_ratio
+    FROM "PickupSlot" ps
+    LEFT JOIN "Order" o ON o."pickupSlotId" = ps.id
+    GROUP BY ps.id, ps.label, ps.capacity
+    ORDER BY ps."startTime"
+  metrics:
+    - slot_label:
+        usage: "LABEL"
+        description: "Bezeichnung des Abholslots"
+    - capacity:
+        usage: "GAUGE"
+        description: "Maximale Kapazität des Slots"
+    - active_orders:
+        usage: "GAUGE"
+        description: "Anzahl aktiver (nicht stornierter) Bestellungen"
+    - occupancy_ratio:
+        usage: "GAUGE"
+        description: "Belegungsgrad als Dezimalzahl (0.0 – 1.0)"

@@ -17,6 +17,7 @@ s3_bucket_name: "shop-assets"
 s3_public_url: "https://shop-assets.fsn1.your-objectstorage.com"
 
 # Monitoring — IPs nach terraform apply eintragen
-app_server_ip: ""        # terraform output server_ip
-monitoring_server_ip: "" # terraform output monitoring_ip
+app_server_ip: ""                   # terraform output server_ip
+monitoring_server_ip: ""            # terraform output monitoring_ip
+monitoring_server_private_ip: ""    # Private-Network-IP des Monitoring-Servers (z.B. 10.0.0.3)
 alert_email: "admin@example.de"
