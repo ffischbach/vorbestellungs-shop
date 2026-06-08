@@ -3,7 +3,14 @@ import { getRequestContext } from './request-context'
 
 const base = pino(
   process.env.NODE_ENV === 'production'
-    ? { level: 'info' }
+    ? {
+        level: 'info',
+        formatters: {
+          level(label) {
+            return { level: label }
+          },
+        },
+      }
     : {
         level: 'debug',
         transport: {
