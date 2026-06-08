@@ -233,21 +233,9 @@ ansible-playbook \
   playbooks/setup-monitoring.yml
 ```
 
-Grafana erreichbar unter `http://<monitoring-ip>:3000` (nur von `admin_ips`).
+Grafana erreichbar unter `https://monitoring.meinverein.de` (nur von `admin_ips`).
 
 **Automatisch provisioniert:**
 - Datasources: Prometheus + Loki
 - Alerts: App down (2 min), Disk >80%, Fehlerrate >10%
 - Alert-Kanal: E-Mail an `alert_email`
-
----
-
-## Zweiten Verein hinzufügen
-
-Jeder Verein bekommt seine eigene Server-Instanz mit eigener Datenbank.
-
-1. `terraform.tfvars` mit neuem `club_slug` anpassen
-2. `terraform init -backend-config="key=shops/<neuer-slug>/terraform.tfstate"`
-3. `terraform apply`
-4. `ansible-playbook setup.yml` mit angepassten `group_vars` (andere Domain, SMTP, Club-Werte)
-5. Fertig — dasselbe Docker-Image, andere Konfiguration via Env Vars

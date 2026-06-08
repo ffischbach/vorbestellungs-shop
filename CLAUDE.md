@@ -89,6 +89,32 @@ Lokale Services (via `docker compose -f infra/docker/docker-compose.dev.yml up -
 - Templates immer in `packages/email/` — niemals Inline-HTML in der App
 - `pnpm email:dev` nutzen um Templates vor dem Commit zu prüfen
 
+### Authentifizierung & Session-Validierung
+
+**Jede neue oder geänderte Server Action und API Route muss explizit entscheiden, ob sie authentifiziert oder öffentlich ist — und das umsetzen.**
+
+Die Middleware prüft nur das Vorhandensein des Session-Cookies (Edge Runtime, kein DB-Zugriff möglich). Das reicht nicht als Sicherheitsgrenze — ein gefälschtes oder abgelaufenes Cookie käme durch.
+
+**Für Admin-Operationen:** `requireAdmin()` aus `app/actions/admin.ts` als erste Zeile jeder Funktion aufrufen. Das Muster:
+```typescript
+async function requireAdmin() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session) throw new Error('Unauthorized')
+  return session
+}
+// Jede Admin-Action:
+export async function myAdminAction() {
+  await requireAdmin()
+  // ...
+}
+```
+
+**Für Admin-API-Routes:** `auth.api.getSession({ headers: request.headers })` direkt am Anfang des Handlers prüfen und bei `null` mit `401` abbrechen.
+
+**Für Cron-Routes:** `x-cron-secret`-Header gegen `process.env.CRON_SECRET` prüfen (bestehende Routen als Vorlage).
+
+**Öffentliche Endpunkte** (Shop, Warenkorb, Bestellung) brauchen keine Session-Prüfung — aber das muss eine bewusste Entscheidung sein, nicht ein Versehen.
+
 ## Club-Konfiguration
 
 `apps/web/club.config.ts` liest zur **Laufzeit** aus Umgebungsvariablen (`CLUB_NAME`, `CLUB_LOGO_URL`, `CLUB_PRIMARY_COLOR`, `CLUB_ACCENT_COLOR`, `CLUB_EVENT_NAME`, `CLUB_EVENT_DATE`, `CLUB_CONTACT_EMAIL`). Schema und Zod-Validierung in `packages/config/src/club.ts`.
