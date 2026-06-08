@@ -31,10 +31,16 @@ export type SubmitOrderResult =
 export async function submitOrder(input: unknown, sessionId?: string): Promise<SubmitOrderResult> {
   const parsed = orderInputSchema.safeParse(input)
   if (!parsed.success) {
+    logger.warn({ sessionId, issues: parsed.error.issues }, 'Bestellformular ungültig')
     return { success: false, error: 'INVALID_INPUT' }
   }
 
   const { customerName, email, pickupSlotId, items } = parsed.data
+
+  logger.info(
+    { sessionId, pickupSlotId, itemCount: items.length },
+    'Bestellung wird verarbeitet',
+  )
 
   const allProducts = await getProducts()
   const productMap = new Map(allProducts.map((p) => [p.id, p]))
@@ -42,7 +48,10 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
   const resolvedItems: Array<{ productId: string; quantity: number; price: number }> = []
   for (const item of items) {
     const product = productMap.get(item.productId)
-    if (!product) return { success: false, error: 'PRODUCT_NOT_FOUND' }
+    if (!product) {
+      logger.warn({ sessionId, productId: item.productId }, 'Unbekanntes Produkt bei Bestellung')
+      return { success: false, error: 'PRODUCT_NOT_FOUND' }
+    }
     resolvedItems.push({ productId: item.productId, quantity: item.quantity, price: Number(product.price) })
   }
 
@@ -63,6 +72,7 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
   const results = evaluateRules([], orderContext)
   const violation = results.find((r) => !r.valid)
   if (violation && !violation.valid) {
+    logger.warn({ sessionId, pickupSlotId, violation: violation.message }, 'Bestellung durch Validierungsregel abgelehnt')
     return { success: false, error: violation.message }
   }
 
@@ -70,13 +80,28 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
   try {
     order = await createOrder({ customerName, email, pickupSlotId, items: resolvedItems })
   } catch (err) {
-    if (err instanceof SlotFullError) return { success: false, error: 'SLOT_FULL' }
-    if (err instanceof SlotNotFoundError) return { success: false, error: 'SLOT_NOT_FOUND' }
-    if (err instanceof ProductStockError) return { success: false, error: 'PRODUCT_STOCK_EXCEEDED' }
+    if (err instanceof SlotFullError) {
+      logger.warn({ sessionId, pickupSlotId }, 'Bestellung abgelehnt: Slot ausgebucht')
+      return { success: false, error: 'SLOT_FULL' }
+    }
+    if (err instanceof SlotNotFoundError) {
+      logger.warn({ sessionId, pickupSlotId }, 'Bestellung abgelehnt: Slot nicht gefunden')
+      return { success: false, error: 'SLOT_NOT_FOUND' }
+    }
+    if (err instanceof ProductStockError) {
+      logger.warn({ sessionId, productId: err.productId }, 'Bestellung abgelehnt: Lagerbestand überschritten')
+      return { success: false, error: 'PRODUCT_STOCK_EXCEEDED' }
+    }
+    logger.error({ sessionId, pickupSlotId, err }, 'Unerwarteter Fehler beim Erstellen der Bestellung')
     throw err
   }
 
   const orderNumber = `VB-${order.id.slice(-6).toUpperCase()}`
+
+  logger.info(
+    { sessionId, orderId: order.id, orderNumber, pickupSlotId, itemCount: resolvedItems.length },
+    'Bestellung erfolgreich erstellt',
+  )
 
   const clubConfig = await getClubConfig()
 
@@ -113,7 +138,10 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
     subject: `Bestellbestätigung #${orderNumber} – ${clubConfig.name}`,
     html: emailHtml,
   })
-  if (!emailResult.success) {
+
+  if (emailResult.success) {
+    logger.info({ orderId: order.id, orderNumber }, 'Bestätigungsmail versendet')
+  } else {
     logger.warn({ orderId: order.id, orderNumber }, 'Bestellung gespeichert, E-Mail-Versand fehlgeschlagen')
   }
 

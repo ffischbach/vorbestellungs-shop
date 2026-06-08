@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Better Auth setzt den __Secure- Präfix wenn die baseURL mit https:// beginnt.
-// Der Präfix ist Teil des Cookie-Namens und muss hier exakt übereinstimmen.
 const SESSION_COOKIE = (process.env.BETTER_AUTH_URL ?? 'http://localhost:3000').startsWith('https://')
   ? '__Secure-better-auth.session_token'
   : 'better-auth.session_token'
@@ -9,8 +7,16 @@ const SESSION_COOKIE = (process.env.BETTER_AUTH_URL ?? 'http://localhost:3000').
 const PUBLIC_ADMIN_PATHS = ['/admin/login', '/admin/setup', '/admin/login/totp']
 
 export function middleware(request: NextRequest) {
+  const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID()
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-request-id', requestId)
+
+  if (!request.nextUrl.pathname.startsWith('/admin')) {
+    return NextResponse.next({ request: { headers: requestHeaders } })
+  }
+
   if (PUBLIC_ADMIN_PATHS.some((p) => request.nextUrl.pathname.startsWith(p))) {
-    return NextResponse.next()
+    return NextResponse.next({ request: { headers: requestHeaders } })
   }
 
   // Nur Vorhandensein des Cookies prüfen — echte Validierung passiert in den Server Actions
@@ -21,9 +27,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  return NextResponse.next()
+  return NextResponse.next({ request: { headers: requestHeaders } })
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/api/:path*'],
 }
