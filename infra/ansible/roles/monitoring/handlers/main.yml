@@ -1,0 +1,11 @@
+- name: Grafana neu starten
+  become_user: "{{ deploy_user }}"
+  command: docker compose -f /opt/monitoring/docker-compose.yml restart grafana
+  args:
+    chdir: /opt/monitoring
+
+- name: Prometheus neu starten
+  become_user: "{{ deploy_user }}"
+  command: docker compose -f /opt/monitoring/docker-compose.yml restart prometheus
+  args:
+    chdir: /opt/monitoring

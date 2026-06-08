@@ -1,0 +1,6 @@
+#!/bin/bash
+CRON_SECRET=$(grep '^CRON_SECRET=' {{ app_dir }}/.env | cut -d'"' -f2)
+curl -sf -X POST https://{{ shop_domain }}/api/cron/reminder \
+  -H "x-cron-secret: $CRON_SECRET" \
+  --max-time 60 \
+  -o /dev/null

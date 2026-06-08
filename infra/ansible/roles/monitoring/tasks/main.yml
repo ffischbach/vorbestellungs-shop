@@ -3,20 +3,21 @@
     path: /opt/monitoring
     state: directory
     owner: "{{ deploy_user }}"
-    mode: '0750'
+    mode: '0755'
 
 - name: Unterverzeichnisse anlegen
   file:
     path: "/opt/monitoring/{{ item }}"
     state: directory
     owner: "{{ deploy_user }}"
-    mode: '0750'
+    mode: '0755'
   loop:
     - prometheus
     - loki
     - grafana/provisioning/datasources
     - grafana/provisioning/alerting
     - grafana/provisioning/dashboards
+  notify: Grafana neu starten
 
 - name: docker-compose.yml deployen
   copy:
@@ -45,6 +46,7 @@
     dest: /opt/monitoring/prometheus/prometheus.yml
     owner: "{{ deploy_user }}"
     mode: '0644'
+  notify: Prometheus neu starten
 
 - name: Grafana Datasources deployen
   copy:
@@ -52,6 +54,7 @@
     dest: /opt/monitoring/grafana/provisioning/datasources/datasources.yml
     owner: "{{ deploy_user }}"
     mode: '0644'
+  notify: Grafana neu starten
 
 - name: Grafana Alert-Rules deployen
   copy:
@@ -59,6 +62,7 @@
     dest: /opt/monitoring/grafana/provisioning/alerting/rules.yml
     owner: "{{ deploy_user }}"
     mode: '0644'
+  notify: Grafana neu starten
 
 - name: Grafana Dashboard-Provider deployen
   copy:
@@ -66,6 +70,7 @@
     dest: /opt/monitoring/grafana/provisioning/dashboards/dashboards.yml
     owner: "{{ deploy_user }}"
     mode: '0644'
+  notify: Grafana neu starten
 
 - name: Grafana Shop-Dashboard deployen
   copy:
@@ -73,6 +78,7 @@
     dest: /opt/monitoring/grafana/provisioning/dashboards/shop-overview.json
     owner: "{{ deploy_user }}"
     mode: '0644'
+  notify: Grafana neu starten
 
 - name: Grafana Contact-Point aus Template deployen
   template:
@@ -80,6 +86,7 @@
     dest: /opt/monitoring/grafana/provisioning/alerting/contactpoints.yml
     owner: "{{ deploy_user }}"
     mode: '0644'
+  notify: Grafana neu starten
 
 - name: .env für Monitoring schreiben
   template:

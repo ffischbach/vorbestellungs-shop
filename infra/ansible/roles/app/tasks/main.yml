@@ -95,6 +95,7 @@
     dest: "{{ app_dir }}/promtail/config.yml"
     owner: "{{ deploy_user }}"
     mode: '0644'
+  notify: Promtail neu starten
 
 - name: Backup-Verzeichnis anlegen
   file:
@@ -130,11 +131,36 @@
     rule: allow
     port: "{{ item }}"
     proto: tcp
-    src: "{{ monitoring_server_ip }}"
+    src: "{{ monitoring_server_private_ip }}"
   loop:
     - '9100'
     - '8080'
     - '9187'
+
+- name: Cron-Skripte deployen
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ app_dir }}/{{ item.dest }}"
+    owner: "{{ deploy_user }}"
+    mode: '0750'
+  loop:
+    - { src: cron-cleanup.sh.j2, dest: cron-cleanup.sh }
+    - { src: cron-reminder.sh.j2, dest: cron-reminder.sh }
+
+- name: Cron — Reservierungen stündlich bereinigen
+  cron:
+    name: "Reservierungen bereinigen"
+    user: "{{ deploy_user }}"
+    minute: "5"
+    job: "{{ app_dir }}/cron-cleanup.sh"
+
+- name: Cron — Reminder-Mails täglich um 09:00 versenden
+  cron:
+    name: "Reminder-Mails versenden"
+    user: "{{ deploy_user }}"
+    minute: "0"
+    hour: "9"
+    job: "{{ app_dir }}/cron-reminder.sh"
 
 - name: Bei GHCR einloggen
   become_user: "{{ deploy_user }}"

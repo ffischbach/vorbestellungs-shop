@@ -1,0 +1,5 @@
+- name: Promtail neu starten
+  become_user: "{{ deploy_user }}"
+  command: docker compose -f {{ app_dir }}/docker-compose.yml restart promtail
+  args:
+    chdir: "{{ app_dir }}"

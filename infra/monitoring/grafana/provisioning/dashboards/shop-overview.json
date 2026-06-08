@@ -8,6 +8,19 @@
   "time": { "from": "now-24h", "to": "now" },
   "timezone": "browser",
   "tags": ["shop"],
+  "templating": {
+    "list": [
+      {
+        "name": "sessionId",
+        "label": "Session-ID",
+        "description": "Cart-Session-UUID zum Filtern aller Logs eines Nutzers",
+        "type": "textbox",
+        "query": "",
+        "current": { "value": "" },
+        "hide": 0
+      }
+    ]
+  },
   "panels": [
 
     {
@@ -386,6 +399,33 @@
         "enableLogDetails": true,
         "dedupStrategy": "none",
         "sortOrder": "Descending"
+      }
+    },
+
+    {
+      "id": 10,
+      "type": "logs",
+      "title": "Logs nach Session-ID",
+      "description": "Alle Log-Einträge einer bestimmten Cart-Session. Session-ID oben im Textfeld eingeben. Die UUID findet sich im localStorage des Browsers unter dem Key 'cart_session_id'.",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 30 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "{container=\"shop-app-1\"} | json | sessionId = \"$sessionId\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Ascending"
       }
     }
 

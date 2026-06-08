@@ -21,6 +21,30 @@ scrape_configs:
       - json:
           expressions:
             level: level
+      - replace:
+          source: level
+          expression: '^10$'
+          replace: trace
+      - replace:
+          source: level
+          expression: '^20$'
+          replace: debug
+      - replace:
+          source: level
+          expression: '^30$'
+          replace: info
+      - replace:
+          source: level
+          expression: '^40$'
+          replace: warn
+      - replace:
+          source: level
+          expression: '^50$'
+          replace: error
+      - replace:
+          source: level
+          expression: '^60$'
+          replace: fatal
       - labels:
           level:
       # IP-Adressen anonymisieren (letztes Oktett auf 0) — DSGVO
