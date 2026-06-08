@@ -27,10 +27,10 @@ export async function sendEmail({
   const from = process.env.SMTP_FROM ?? 'shop@example.com'
   try {
     const info = await transporter.sendMail({ from, to, subject, html })
-    logger.info({ messageId: info.messageId, to }, 'E-Mail gesendet')
+    logger.info({ messageId: info.messageId }, 'E-Mail gesendet')
     return { success: true as const, messageId: info.messageId }
   } catch (error) {
-    logger.error({ error, to }, 'E-Mail Versand fehlgeschlagen')
+    logger.error({ error }, 'E-Mail Versand fehlgeschlagen')
     return { success: false as const, error }
   }
 }
