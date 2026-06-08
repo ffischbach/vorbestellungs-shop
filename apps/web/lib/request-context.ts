@@ -3,8 +3,9 @@ import type { NextRequest } from 'next/server'
 
 export interface RequestContext {
   requestId: string
-  method: string
-  path: string
+  sessionId?: string
+  method?: string
+  path?: string
 }
 
 export const requestContextStorage = new AsyncLocalStorage<RequestContext>()
@@ -22,5 +23,14 @@ export function withRequestContext<T>(
     method: req.method,
     path: req.nextUrl.pathname,
   }
+  return requestContextStorage.run(context, fn)
+}
+
+export function runWithSessionId<T>(sessionId: string, fn: () => Promise<T>): Promise<T> {
+  if (!sessionId) return fn()
+  const existing = requestContextStorage.getStore()
+  const context: RequestContext = existing
+    ? { ...existing, sessionId }
+    : { requestId: crypto.randomUUID(), sessionId }
   return requestContextStorage.run(context, fn)
 }
