@@ -1,6 +1,8 @@
 import { getClubConfig } from '@/club.config'
 import CartPageClient from '@/components/shop/CartPageClient'
 
+export const dynamic = 'force-dynamic'
+
 export default async function CartPage() {
   const clubConfig = await getClubConfig()
   return (
