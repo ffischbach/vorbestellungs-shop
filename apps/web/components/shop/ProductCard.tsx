@@ -35,13 +35,19 @@ export function ProductCard({
 }: ProductCardProps) {
   const { items, setProductQuantity } = useCart()
   const [stockError, setStockError] = useState(false)
+  const [confirmedOutOfStock, setConfirmedOutOfStock] = useState(false)
 
   const cartItem = items.find((i) => i.productId === id)
   const quantity = cartItem?.quantity ?? 0
 
-  // How many units are available for this session (server already excluded our own reservation)
+  // How many units are available for this session (server already excluded our own reservation).
+  // confirmedOutOfStock overrides stale SSR props when the server explicitly returned OUT_OF_STOCK.
   const availableForMe =
-    stock !== null ? Math.max(0, stock - soldQuantity - reservedByOthers) : null
+    stock !== null
+      ? confirmedOutOfStock
+        ? 0
+        : Math.max(0, stock - soldQuantity - reservedByOthers)
+      : null
 
   const atStockLimit = availableForMe !== null && quantity >= availableForMe
   const atMaxLimit = maxQuantity !== null && quantity >= maxQuantity
@@ -61,6 +67,9 @@ export function ProductCard({
     if (!result.success) {
       setStockError(true)
       setTimeout(() => setStockError(false), 3000)
+      if (result.error === 'OUT_OF_STOCK') {
+        setConfirmedOutOfStock(true)
+      }
     }
   }
 
