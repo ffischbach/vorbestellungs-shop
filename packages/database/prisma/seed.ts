@@ -148,6 +148,7 @@ async function main() {
       update: {},
       create: {
         id: `order-seed-${i + 1}`,
+        orderNumber: `VB-SEED${String(i + 1).padStart(2, '0')}`,
         customerName: o.name,
         email: o.email,
         pickupSlotId: o.slotId,

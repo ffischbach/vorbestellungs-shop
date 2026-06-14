@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import { db } from '../index'
 import { Prisma, type OrderStatus } from '@prisma/client'
 
@@ -80,8 +81,13 @@ export async function createOrder(data: {
       }
     }
 
+    const id = randomUUID()
+    const orderNumber = `VB-${id.slice(-6).toUpperCase()}`
+
     return tx.order.create({
       data: {
+        id,
+        orderNumber,
         customerName: data.customerName,
         email: data.email,
         pickupSlotId: data.pickupSlotId,

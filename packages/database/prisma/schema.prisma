@@ -54,6 +54,7 @@ model PickupSlot {
 
 model Order {
   id           String      @id @default(cuid())
+  orderNumber  String      @unique
   createdAt    DateTime    @default(now())
   customerName String
   email        String
@@ -62,6 +63,10 @@ model Order {
   status       OrderStatus @default(PENDING)
   items        OrderItem[]
   reminderSent Boolean     @default(false)
+
+  @@index([status])
+  @@index([reminderSent, status])
+  @@index([pickupSlotId])
 }
 
 model OrderItem {
