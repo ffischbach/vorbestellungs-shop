@@ -12,19 +12,26 @@ export async function GET(request: NextRequest) {
   const orders = await getOrders({ status: 'CONFIRMED' })
 
   const rows: string[][] = [
-    ['Bestellnummer', 'Name', 'E-Mail', 'Zeitslot', 'Produkt', 'Menge', 'Preis', 'Status'],
-    ...orders.flatMap((order) =>
-      order.items.map((item) => [
-        order.id,
-        order.customerName,
+    ['order_id', 'first_name', 'last_name', 'email', 'abholzeit', 'net_total', 'item_name', 'quantity'],
+    ...orders.flatMap((order) => {
+      const nameParts = order.customerName.trim().split(/\s+/)
+      const firstName = nameParts[0] ?? ''
+      const lastName = nameParts.slice(1).join(' ')
+      const orderId = String(parseInt(order.orderNumber.slice(3), 16))
+      const netTotal = order.items
+        .reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
+        .toFixed(2)
+      return order.items.map((item) => [
+        orderId,
+        firstName,
+        lastName,
         order.email,
         order.pickupSlot.label,
+        netTotal,
         item.product.name,
         String(item.quantity),
-        item.product.price.toString(),
-        order.status,
       ])
-    ),
+    }),
   ]
 
   const csv = rows
