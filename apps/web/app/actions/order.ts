@@ -15,6 +15,8 @@ import { sendEmail } from '@/lib/email'
 import { getClubConfig } from '@/club.config'
 import logger from '@/lib/logger'
 import { runWithSessionId } from '@/lib/request-context'
+import { checkRateLimit } from '@/lib/rate-limit'
+import { headers } from 'next/headers'
 
 const orderInputSchema = z.object({
   customerName: z.string().min(1),
@@ -30,6 +32,13 @@ export type SubmitOrderResult =
   | { success: false; error: string }
 
 export async function submitOrder(input: unknown, sessionId?: string): Promise<SubmitOrderResult> {
+  const ip = (await headers()).get('x-real-ip') ?? 'unknown'
+  const rateCheck = checkRateLimit(ip)
+  if (!rateCheck.allowed) {
+    logger.warn({ ip }, 'Bestellung rate-limited')
+    return { success: false, error: 'RATE_LIMITED' }
+  }
+
   return runWithSessionId(sessionId ?? '', async () => {
     const parsed = orderInputSchema.safeParse(input)
     if (!parsed.success) {
@@ -98,7 +107,7 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
       throw err
     }
 
-    const orderNumber = `VB-${order.id.slice(-6).toUpperCase()}`
+    const orderNumber = order.orderNumber
 
     logger.info(
       { orderId: order.id, orderNumber, pickupSlotId, itemCount: resolvedItems.length },

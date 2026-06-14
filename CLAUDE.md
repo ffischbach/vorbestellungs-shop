@@ -139,7 +139,7 @@ type ValidationRule =
 
 - Secrets **niemals** in Git committen — immer in `.env` (lokal) oder Ansible Vault (Produktion)
 - `/admin`-Routen sind via `middleware.ts` geschützt — keine einzelnen Page-Level-Checks
-- Rate Limiting auf `/api/checkout` in `apps/web/middleware.ts` (nicht in Caddy)
+- Rate Limiting auf `submitOrder` Server Action in `apps/web/lib/rate-limit.ts` (nicht in Caddy)
 - TOTP-Pflicht für Admin-Logins in Production (`NODE_ENV === 'production'`)
 
 ## Infrastruktur
