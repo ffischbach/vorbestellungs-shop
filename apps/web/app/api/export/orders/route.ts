@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     ['Bestellnummer', 'Name', 'E-Mail', 'Zeitslot', 'Produkt', 'Menge', 'Preis', 'Status'],
     ...orders.flatMap((order) =>
       order.items.map((item) => [
-        order.id,
+        order.orderNumber,
         order.customerName,
         order.email,
         order.pickupSlot.label,
