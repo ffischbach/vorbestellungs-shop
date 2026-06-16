@@ -14,6 +14,7 @@ interface CheckoutPageClientProps {
   logoUrl?: string
   slots: TimeSlot[]
   paymentMethods: string[]
+  clubName: string
 }
 
 export function CheckoutPageClient({
@@ -22,6 +23,7 @@ export function CheckoutPageClient({
   logoUrl,
   slots,
   paymentMethods,
+  clubName,
 }: CheckoutPageClientProps) {
   const { items, totalAmount, clearCart, selectedSlotId, setSelectedSlotId, sessionId, isLoading } = useCart()
   const [step, setStep] = useState(1)
@@ -34,7 +36,7 @@ export function CheckoutPageClient({
   const effectiveSlotId = availableSlots.some((s) => s.id === selectedSlotId)
     ? selectedSlotId
     : undefined
-  const [formData, setFormData] = useState({ name: '', email: '' })
+  const [formData, setFormData] = useState({ name: '', email: '', marketingConsent: false })
   const [confirmed, setConfirmed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -52,6 +54,7 @@ export function CheckoutPageClient({
         customerName: formData.name,
         email: formData.email,
         pickupSlotId: effectiveSlotId,
+        marketingConsent: formData.marketingConsent,
         items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
       },
       sessionId
@@ -144,6 +147,13 @@ export function CheckoutPageClient({
                 </p>
               </div>
             </div>
+          </div>
+
+          <div className="bg-muted p-4 max-w-md mx-auto">
+            <p className="text-sm text-foreground">
+              Du solltest in Kürze eine Bestätigungs-E-Mail erhalten.
+              Bitte prüfe auch deinen Spam-Ordner, falls sie nicht ankommt.
+            </p>
           </div>
 
           <div className="bg-muted p-4 max-w-md mx-auto">
@@ -252,6 +262,20 @@ export function CheckoutPageClient({
                   Für die Bestellbestätigung per E-Mail
                 </p>
               </div>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.marketingConsent}
+                  onChange={(e) => setFormData({ ...formData, marketingConsent: e.target.checked })}
+                  className="mt-0.5 w-4 h-4 border-border shrink-0"
+                />
+                <span className="text-sm text-muted-foreground">
+                  Ja, ich möchte per E-Mail über zukünftige Veranstaltungen von{' '}
+                  <strong className="text-foreground">{clubName}</strong> informiert werden.
+                  Die Einwilligung ist freiwillig und kann jederzeit widerrufen werden.
+                </span>
+              </label>
             </div>
 
             <div className="flex gap-2">

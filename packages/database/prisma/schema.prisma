@@ -60,9 +60,11 @@ model Order {
   email        String
   pickupSlot   PickupSlot  @relation(fields: [pickupSlotId], references: [id])
   pickupSlotId String
-  status       OrderStatus @default(PENDING)
-  items        OrderItem[]
-  reminderSent Boolean     @default(false)
+  status               OrderStatus @default(PENDING)
+  items                OrderItem[]
+  reminderSent         Boolean     @default(false)
+  marketingConsent     Boolean     @default(false)
+  marketingConsentAt   DateTime?
 
   @@index([status])
   @@index([reminderSent, status])

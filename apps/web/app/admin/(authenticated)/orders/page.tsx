@@ -33,12 +33,20 @@ export default async function OrdersPage({
           <h1 className="text-2xl font-bold tracking-tight">Bestellungen</h1>
           <p className="text-muted-foreground text-sm mt-1">{orders.length} Bestellungen</p>
         </div>
-        <a
-          href="/api/export/orders"
-          className="text-sm font-medium underline underline-offset-4 text-muted-foreground hover:text-foreground"
-        >
-          CSV exportieren
-        </a>
+        <div className="flex items-center gap-4">
+          <a
+            href="/api/export/marketing-consent"
+            className="text-sm font-medium underline underline-offset-4 text-muted-foreground hover:text-foreground"
+          >
+            Newsletter-Einwilligungen
+          </a>
+          <a
+            href="/api/export/orders"
+            className="text-sm font-medium underline underline-offset-4 text-muted-foreground hover:text-foreground"
+          >
+            CSV exportieren
+          </a>
+        </div>
       </div>
 
       {/* Status filter */}
@@ -70,6 +78,7 @@ export default async function OrdersPage({
                 <th className="text-left py-2 px-4 font-medium text-muted-foreground">E-Mail</th>
                 <th className="text-left py-2 px-4 font-medium text-muted-foreground">Zeitslot</th>
                 <th className="text-left py-2 px-4 font-medium text-muted-foreground">Artikel</th>
+                <th className="text-left py-2 px-4 font-medium text-muted-foreground">Newsletter</th>
                 <th className="text-left py-2 px-4 font-medium text-muted-foreground">Status</th>
                 <th className="py-2 px-4 w-48" />
               </tr>
@@ -85,6 +94,11 @@ export default async function OrdersPage({
                     {order.items.map((item) => (
                       <div key={item.id}>{item.quantity}× {item.product.name}</div>
                     ))}
+                  </td>
+                  <td className="py-3 px-4 text-sm">
+                    {order.marketingConsent
+                      ? <span className="text-success font-medium">Ja</span>
+                      : <span className="text-muted-foreground">–</span>}
                   </td>
                   <td className="py-3 px-4">
                     <span className={`text-xs font-bold px-2 py-0.5 ${STATUS_STYLES[order.status]}`}>

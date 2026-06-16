@@ -16,6 +16,7 @@ export default async function CheckoutPage() {
       logoUrl={clubConfig.logoUrl}
       slots={timeSlots}
       paymentMethods={clubConfig.paymentMethods}
+      clubName={clubConfig.name}
     />
   )
 }

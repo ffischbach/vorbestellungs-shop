@@ -22,6 +22,7 @@ const orderInputSchema = z.object({
   customerName: z.string().min(1),
   email: z.string().email(),
   pickupSlotId: z.string().min(1),
+  marketingConsent: z.boolean().optional().default(false),
   items: z
     .array(z.object({ productId: z.string().min(1), quantity: z.number().int().min(1) }))
     .min(1),
@@ -46,7 +47,7 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
       return { success: false, error: 'INVALID_INPUT' }
     }
 
-    const { customerName, email, pickupSlotId, items } = parsed.data
+    const { customerName, email, pickupSlotId, marketingConsent, items } = parsed.data
 
     logger.info(
       { pickupSlotId, itemCount: items.length },
@@ -89,7 +90,7 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
 
     let order
     try {
-      order = await createOrder({ customerName, email, pickupSlotId, items: resolvedItems })
+      order = await createOrder({ customerName, email, pickupSlotId, marketingConsent, items: resolvedItems })
     } catch (err) {
       if (err instanceof SlotFullError) {
         logger.warn({ pickupSlotId }, 'Bestellung abgelehnt: Slot ausgebucht')

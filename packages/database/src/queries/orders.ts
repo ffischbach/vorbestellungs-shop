@@ -49,6 +49,7 @@ export async function createOrder(data: {
   customerName: string
   email: string
   pickupSlotId: string
+  marketingConsent: boolean
   items: Array<{ productId: string; quantity: number; price: number }>
 }) {
   return db.$transaction(async (tx) => {
@@ -91,6 +92,8 @@ export async function createOrder(data: {
         customerName: data.customerName,
         email: data.email,
         pickupSlotId: data.pickupSlotId,
+        marketingConsent: data.marketingConsent,
+        marketingConsentAt: data.marketingConsent ? new Date() : null,
         items: {
           create: data.items.map((item) => ({
             productId: item.productId,
@@ -132,6 +135,14 @@ export async function getOrdersPendingReminder(eventDate: Date) {
 
 export async function markReminderSent(id: string) {
   return db.order.update({ where: { id }, data: { reminderSent: true } })
+}
+
+export async function getMarketingConsentEmails() {
+  return db.order.findMany({
+    where: { marketingConsent: true, status: { not: 'CANCELLED' } },
+    select: { customerName: true, email: true, orderNumber: true, marketingConsentAt: true },
+    orderBy: { marketingConsentAt: 'desc' },
+  })
 }
 
 export async function getOrderStats() {
