@@ -65,6 +65,7 @@ export default async function OrdersPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
+                <th className="text-left py-2 px-4 font-medium text-muted-foreground">Bestellnr.</th>
                 <th className="text-left py-2 px-4 font-medium text-muted-foreground">Name</th>
                 <th className="text-left py-2 px-4 font-medium text-muted-foreground">E-Mail</th>
                 <th className="text-left py-2 px-4 font-medium text-muted-foreground">Zeitslot</th>
@@ -76,6 +77,7 @@ export default async function OrdersPage({
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} className="border-b border-border last:border-0 hover:bg-muted/20 align-top">
+                  <td className="py-3 px-4 font-mono text-xs text-muted-foreground whitespace-nowrap">{order.orderNumber}</td>
                   <td className="py-3 px-4 font-medium whitespace-nowrap">{order.customerName}</td>
                   <td className="py-3 px-4 text-muted-foreground text-sm">{order.email}</td>
                   <td className="py-3 px-4 text-muted-foreground text-sm whitespace-nowrap">{order.pickupSlot.label}</td>
