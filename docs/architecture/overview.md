@@ -272,7 +272,7 @@ Farben werden als CSS Custom Properties (`--color-primary`, `--color-accent`) in
 
 ```
 git push origin main
-  → GitHub Actions CI (typecheck + lint + test + build)
+  → GitHub Actions CI (typecheck + lint + test + build + docs-links)
   → Docker-Image bauen → ghcr.io pushen
   → HMAC-signierter POST an /_deploy/deploy
   → Webhook-Receiver auf Server:

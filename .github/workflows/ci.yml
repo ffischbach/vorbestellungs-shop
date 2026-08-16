@@ -44,6 +44,23 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
 
+  docs-links:
+    name: Docs Link Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check internal links in docs
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --offline
+            --no-progress
+            --exclude-mail
+            docs/**/*.md
+            README.md
+            CLAUDE.md
+          fail: true
+
   build:
     name: Build
     runs-on: ubuntu-latest
