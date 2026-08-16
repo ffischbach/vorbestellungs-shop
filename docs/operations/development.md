@@ -3,7 +3,7 @@
 ## Voraussetzungen
 
 - Node.js 20+
-- pnpm 9+
+- pnpm 11+
 - Docker + Docker Compose Plugin
 - Git
 
@@ -125,7 +125,8 @@ pnpm dev               # Alle Apps im Watch-Mode starten
 pnpm build             # Production Build
 pnpm typecheck         # TypeScript prüfen
 pnpm lint              # ESLint
-pnpm test              # Unit Tests
+pnpm test              # Unit Tests (Vitest)
+pnpm test:e2e          # E2E Tests (Playwright)
 
 # Datenbank
 pnpm db:migrate        # Migrations ausführen

@@ -8,7 +8,10 @@ Selbstgehosteter, DSGVO-konformer Online-Vorbestellungsshop für Vereine — ohn
 
 Companion-Projekt: [vorbestellungs-kasse](https://github.com/ffischbach/vorbestellungs-kasse) (FastAPI + Python + SQLite, läuft auf Raspberry Pi am Event-Tag).
 
-Dokumentation: `docs/setup.md` (Deployment), `docs/architecture.md` (Technik), `docs/development.md` (lokale Entwicklung).
+Dokumentation: [`docs/README.md`](docs/README.md) ist der Einstiegspunkt (Index mit Kategorien).
+Fachliche Anforderungen und Kern-Flows stehen in `docs/domain/` — dort nachschauen, bevor
+du eine Verhaltensänderung an Bestell-, Admin- oder E-Mail-Flows vornimmst, die dieses
+Dokument nicht abdeckt.
 
 ## Architektur auf einen Blick
 
@@ -156,9 +159,9 @@ Deployment-Flow: GitHub Actions → Docker-Image → GHCR → HMAC-Webhook → `
 ## Entscheidungen (ADRs)
 
 Vor größeren strukturellen Änderungen lesen:
-- `docs/ADR-001-framework.md` — Warum Next.js statt Kotlin-Backend
-- `docs/ADR-002-tenancy.md` — Warum Single-Instance statt Multi-Tenant
-- `docs/ADR-003-validation.md` — Warum domain-spezifische Validierung
+- `docs/architecture/adr/001-framework.md` — Warum Next.js statt Kotlin-Backend
+- `docs/architecture/adr/002-tenancy.md` — Warum Single-Instance statt Multi-Tenant
+- `docs/architecture/adr/003-validation.md` — Warum domain-spezifische Validierung
 
 ## Häufige Aufgaben
 
@@ -183,12 +186,21 @@ cd apps/web && pnpm dlx shadcn@latest add <komponente>
 pnpm email:dev  # Vorschau auf localhost:3001
 ```
 
-## Bekannte Einschränkungen
+## Tests
 
-### Kein Test-Runner konfiguriert
-`pnpm test` ist definiert aber es gibt keinen Vitest/Jest-Runner und keine Testdateien. CI läuft
-lautlos durch. Vitest ist der empfohlene Einstieg — `evaluateRules()` in
-`apps/web/lib/validation/evaluate.ts` ist eine pure Funktion und eignet sich als erster Testfall.
+Vitest (Unit) und Playwright (E2E) sind in `apps/web` konfiguriert (`vitest.config.ts`,
+`playwright.config.ts`). Testdateien liegen neben dem Code (`*.test.ts`), E2E-Specs in
+`apps/web/e2e/` (`*.spec.ts`).
+
+```bash
+pnpm test                                          # alle Unit-Tests (via Turborepo)
+pnpm --filter @repo/web exec vitest run <pfad>      # einzelne Testdatei
+pnpm --filter @repo/web exec vitest <pfad>          # einzelne Testdatei im Watch-Mode
+pnpm test:e2e                                       # Playwright E2E-Tests
+```
+
+`evaluateRules()` in `apps/web/lib/validation/evaluate.ts` ist der Referenzfall für pure,
+gut testbare Funktionen — neue Validation-Rule-Types brauchen dort einen Testfall.
 
 ### Server Action Rückgabetypen — Ausnahme für `useActionState`
 Die Konvention `{ success: true/false, ... }` gilt für alle Server Actions **außer** solchen, die

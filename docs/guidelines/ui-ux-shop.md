@@ -193,7 +193,7 @@ Wir verwenden die Standard Tailwind-Breakpoints, mit Fokus auf die unteren beide
 
 ## 9. Wie pflegen wir diese Guidelines?
 
-1.  **Living Document:** Diese Datei liegt im Repo unter `docs/ui-ux-guidelines.md`. Bei jeder neuen Komponente oder Flow-Änderung wird sie aktualisiert.
+1.  **Living Document:** Diese Datei liegt im Repo unter `docs/guidelines/ui-ux-shop.md`. Bei jeder neuen Komponente oder Flow-Änderung wird sie aktualisiert.
 2.  **Storybook (Empfohlen):** Sobald die ersten 5-10 Kernkomponenten stehen (Button, Card, Input, TimeSlotPicker), sollte ein Storybook-Setup (`apps/web/.storybook`) erfolgen. Das dient als interaktive visuelle Referenz.
 3.  **Code Reviews:** PRs werden nicht nur auf Logik, sondern auch auf Einhaltung der Guidelines geprüft (z. B. "Ist der Touch-Target groß genug?", "Ist die semantische Farbe verwendet?").
 

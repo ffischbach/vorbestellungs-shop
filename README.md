@@ -53,22 +53,22 @@ vorbestellungsshop/
 ├── .github/
 │   └── workflows/            # CI/CD Pipelines
 └── docs/
-    ├── architecture.md       # Systemarchitektur & Designentscheidungen
-    ├── development.md        # Lokale Entwicklung
-    ├── setup.md              # Deployment & neuen Verein einrichten
-    ├── ADR-001-framework.md
-    ├── ADR-002-tenancy.md
-    └── ADR-003-validation.md
+    ├── README.md              # Dokumentations-Index
+    ├── domain/                # Fachliche Anforderungen & Kern-Flows
+    ├── architecture/          # Systemarchitektur, Datenmodell, ADRs
+    ├── guidelines/            # UI/UX Guidelines (Shop & Kasse)
+    ├── operations/            # Lokale Entwicklung & Deployment
+    └── backlog.md             # Offene Verbesserungspunkte
 ```
 
 ## Dokumentation
 
-- [Architektur](docs/architecture.md)
-- [Lokale Entwicklung](docs/development.md)
-- [Setup & Deployment](docs/setup.md)
-- [ADR-001: Framework-Wahl](docs/ADR-001-framework.md)
-- [ADR-002: Single-Tenant](docs/ADR-002-tenancy.md)
-- [ADR-003: Validierung](docs/ADR-003-validation.md)
+Vollständiger Index mit Beschreibung: [docs/README.md](docs/README.md)
+
+- [Fachliche Anforderungen](docs/domain/requirements.md) · [Kern-Flows](docs/domain/flows.md)
+- [Architektur-Überblick](docs/architecture/overview.md)
+- [ADR-001: Framework-Wahl](docs/architecture/adr/001-framework.md) · [ADR-002: Single-Tenant](docs/architecture/adr/002-tenancy.md) · [ADR-003: Validierung](docs/architecture/adr/003-validation.md)
+- [Lokale Entwicklung](docs/operations/development.md) · [Setup & Deployment](docs/operations/setup.md)
 
 ## Schnellstart (Entwicklung)
 

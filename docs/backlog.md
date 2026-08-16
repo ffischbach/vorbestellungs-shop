@@ -22,7 +22,8 @@ Server Actions keinen direkten `NextRequest`-Zugriff bieten (→ `headers()` aus
 **Aufwand:** Klein (~1h)
 **Risiko ohne Fix:** Mittel (DoS auf Slots/Stock möglich, kein Zahlungsschaden da kein Payment)
 
-`[ ]`
+`[x]` erledigt (`849253885`) — Limiter liest `x-real-ip` (von Caddy gesetzt, siehe
+[Sicherheitsregeln](../CLAUDE.md#sicherheitsregeln)), 5 Versuche/10min.
 
 ---
 
@@ -161,7 +162,8 @@ Test-Runner ist konfiguriert (dokumentierte Einschränkung in `CLAUDE.md`).
 
 **Aufwand:** Klein (~1h für Setup, Tests laufen dann sofort)
 
-`[ ]`
+`[x]` erledigt — Vitest + Playwright konfiguriert, siehe
+[Entwicklung](operations/development.md) und CLAUDE.md-Abschnitt "Tests".
 
 ---
 
