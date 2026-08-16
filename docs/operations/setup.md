@@ -34,6 +34,14 @@ cp infra/ansible/group_vars/all/vault.yml.example infra/ansible/group_vars/all/v
 ansible-vault encrypt infra/ansible/group_vars/all/vault.yml
 ```
 
+**Sudo für `deploy_user`:** Ansible verbindet sich für alle Playbook-Runs als `deploy_user`,
+nicht als `root` — Root-SSH wird von der `harden`-Rolle im selben Lauf deaktiviert
+(`PermitRootLogin no`). Die Rolle richtet dafür automatisch passwortloses Sudo
+(`/etc/sudoers.d/{{ deploy_user }}`) ein, damit spätere Runs (Config-Updates,
+`setup-monitoring.yml`) weiterhin `become: true` nutzen können. Ein Passwort ist dafür nicht
+nötig und würde auch keine zusätzliche Sicherheit bringen: `deploy_user` ist bereits über die
+`docker`-Gruppe root-äquivalent auf dem Host.
+
 **Hetzner Object Storage einrichten:**
 
 Object Storage wird für Produktbilder und automatische Datenbank-Backups genutzt. Die gesamte Einrichtung erfolgt per AWS CLI (Hetzner Object Storage ist S3-kompatibel).

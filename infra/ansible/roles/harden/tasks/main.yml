@@ -11,6 +11,18 @@
     user: "{{ deploy_user }}"
     key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
 
+# Deploy-User ist über die docker-Gruppe ohnehin root-äquivalent (Docker-Socket-Zugriff
+# erlaubt volle Host-Kontrolle) — NOPASSWD-Sudo fügt daher kein zusätzliches Risiko hinzu,
+# hält aber Ansible-Runs (become: true) funktionsfähig, nachdem Root-SSH unten deaktiviert wird.
+- name: NOPASSWD-Sudo für Deploy-User einrichten
+  copy:
+    content: "{{ deploy_user }} ALL=(ALL) NOPASSWD:ALL\n"
+    dest: "/etc/sudoers.d/{{ deploy_user }}"
+    owner: root
+    group: root
+    mode: "0440"
+    validate: "visudo -cf %s"
+
 - name: Root-Login per SSH deaktivieren
   lineinfile:
     path: /etc/ssh/sshd_config
