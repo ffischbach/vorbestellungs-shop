@@ -16,8 +16,10 @@ Dokument nicht abdeckt. **Vor Refactoring ohne fachlichen Auftrag zusätzlich
 die andere Features stillschweigend brechen könnten, sind dort mit `INV-XX`-IDs
 dokumentiert und im Code an der jeweiligen Stelle verlinkt. Bei neuen Features greift die
 Skill [`new-feature`](.claude/skills/new-feature/SKILL.md), vor Commits mit fachlicher
-Relevanz und bei Code-Reviews [`spec-review`](.claude/skills/spec-review/SKILL.md) —
-beide halten REQ-/INV-IDs und ADRs aktuell.
+Relevanz und bei Code-Reviews [`spec-review`](.claude/skills/spec-review/SKILL.md), vor
+Prisma-Migrationen [`db-migration-check`](.claude/skills/db-migration-check/SKILL.md) —
+alle halten REQ-/INV-IDs und ADRs aktuell. [`docs-audit`](.claude/skills/docs-audit/SKILL.md)
+führt den quartalsweisen Abgleich (Backlog BL-012) aus.
 
 ## Architektur auf einen Blick
 

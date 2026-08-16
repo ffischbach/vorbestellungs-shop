@@ -53,10 +53,10 @@ Wie das System gebaut ist.
 jeder Änderung relevant sind. Alles, was Kontext statt Konvention ist — Begründungen,
 Abläufe, Domänenwissen — gehört in dieses `docs/`-Verzeichnis, verlinkt aus `CLAUDE.md`.
 
-## Skills: `new-feature` & `spec-review`
+## Skills
 
-Zwei Skills halten den REQ-/INV-/ADR-Abgleich an den Punkten aktuell, wo Doku und Code
-sonst auseinanderlaufen — beide werden von Claude Code automatisch herangezogen, wenn
+Vier Skills halten den REQ-/INV-/ADR-Abgleich an den Punkten aktuell, wo Doku und Code
+sonst auseinanderlaufen — alle werden von Claude Code automatisch herangezogen, wenn
 die Aufgabe dazu passt, können aber auch explizit aufgerufen werden:
 
 - [`.claude/skills/new-feature/SKILL.md`](../.claude/skills/new-feature/SKILL.md) —
@@ -64,3 +64,9 @@ die Aufgabe dazu passt, können aber auch explizit aufgerufen werden:
 - [`.claude/skills/spec-review/SKILL.md`](../.claude/skills/spec-review/SKILL.md) —
   vor dem Commit oder bei Code-Review: prüft den fertigen Diff gegen `invariants.md`,
   `requirements.md` und ADRs. Ergänzt `/code-review`, ersetzt es nicht.
+- [`.claude/skills/db-migration-check/SKILL.md`](../.claude/skills/db-migration-check/SKILL.md) —
+  vor `pnpm db:migrate:dev`: prüft Schema-Änderungen gegen `invariants.md`, ADR-Test,
+  hält `architecture/overview.md`s Schema-Auszug aktuell.
+- [`.claude/skills/docs-audit/SKILL.md`](../.claude/skills/docs-audit/SKILL.md) —
+  führt den Quartals-Abgleich aus Backlog BL-012 aus (Schema-Diff, neue Routen ohne
+  Doku-Eintrag, TODO-Scan, Backlog-Status).
