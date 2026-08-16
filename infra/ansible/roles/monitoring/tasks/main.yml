@@ -102,6 +102,16 @@
     proto: tcp
     src: '10.0.0.0/24'
 
+# Prometheus scraped seinen eigenen node-exporter über die Docker-"host-gateway"-Brücke
+# (172.17.0.1, siehe extra_hosts in monitoring/docker-compose.yml) — dieser Traffic verlässt
+# den Host nie, ist also unkritisch, aber ohne explizite Freigabe blockt UFW ihn trotzdem.
+- name: UFW — Node-Exporter (Port 9100) aus Docker-Bridge-Netz erlauben
+  ufw:
+    rule: allow
+    port: '9100'
+    proto: tcp
+    src: '172.16.0.0/12'
+
 - name: Monitoring-Stack starten
   become_user: "{{ deploy_user }}"
   command: docker compose -f /opt/monitoring/docker-compose.yml up -d
