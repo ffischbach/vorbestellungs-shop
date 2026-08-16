@@ -398,7 +398,7 @@ groups:
           severity: critical
         data:
           - refId: A
-            relativeTimeRange: { from: 93600, to: 0 }
+            relativeTimeRange: { from: 300, to: 0 }
             datasourceUid: loki
             model:
               expr: absent_over_time({container="shop-backup-1"} |= "Backup complete" [26h])
@@ -433,7 +433,7 @@ groups:
           severity: warning
         data:
           - refId: A
-            relativeTimeRange: { from: 90000, to: 0 }
+            relativeTimeRange: { from: 300, to: 0 }
             datasourceUid: loki
             model:
               expr: absent_over_time({container="shop-app-1"} |= "Reminder-Mails werden versendet" [25h])
@@ -468,7 +468,7 @@ groups:
           severity: warning
         data:
           - refId: A
-            relativeTimeRange: { from: 90000, to: 0 }
+            relativeTimeRange: { from: 300, to: 0 }
             datasourceUid: loki
             model:
               expr: absent_over_time({container="shop-app-1"} |= "Reservierungen bereinigt" [25h])
