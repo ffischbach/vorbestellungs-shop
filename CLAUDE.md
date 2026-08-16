@@ -14,7 +14,10 @@ du eine Verhaltensänderung an Bestell-, Admin- oder E-Mail-Flows vornimmst, die
 Dokument nicht abdeckt. **Vor Refactoring ohne fachlichen Auftrag zusätzlich
 [`docs/domain/invariants.md`](docs/domain/invariants.md) prüfen** — Implementierungsdetails,
 die andere Features stillschweigend brechen könnten, sind dort mit `INV-XX`-IDs
-dokumentiert und im Code an der jeweiligen Stelle verlinkt.
+dokumentiert und im Code an der jeweiligen Stelle verlinkt. Bei neuen Features greift die
+Skill [`new-feature`](.claude/skills/new-feature/SKILL.md), vor Commits mit fachlicher
+Relevanz und bei Code-Reviews [`spec-review`](.claude/skills/spec-review/SKILL.md) —
+beide halten REQ-/INV-IDs und ADRs aktuell.
 
 ## Architektur auf einen Blick
 

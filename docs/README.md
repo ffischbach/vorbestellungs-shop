@@ -19,6 +19,7 @@ Wie das System gebaut ist.
 - [ADR-001: Framework-Wahl](architecture/adr/001-framework.md) — Next.js statt Kotlin-Backend
 - [ADR-002: Single-Tenant](architecture/adr/002-tenancy.md) — eine Instanz pro Verein statt Multi-Tenant
 - [ADR-003: Validierung](architecture/adr/003-validation.md) — domain-spezifische Rule-Types statt generischer Engine
+- [ADR-Vorlage](architecture/adr/template.md) — Struktur für neue ADRs
 
 ## Guidelines — Konventionen für UI/UX
 
@@ -51,3 +52,15 @@ Wie das System gebaut ist.
 **Faustregel:** `CLAUDE.md` bleibt kurz und listet nur Konventionen, die bei praktisch
 jeder Änderung relevant sind. Alles, was Kontext statt Konvention ist — Begründungen,
 Abläufe, Domänenwissen — gehört in dieses `docs/`-Verzeichnis, verlinkt aus `CLAUDE.md`.
+
+## Skills: `new-feature` & `spec-review`
+
+Zwei Skills halten den REQ-/INV-/ADR-Abgleich an den Punkten aktuell, wo Doku und Code
+sonst auseinanderlaufen — beide werden von Claude Code automatisch herangezogen, wenn
+die Aufgabe dazu passt, können aber auch explizit aufgerufen werden:
+
+- [`.claude/skills/new-feature/SKILL.md`](../.claude/skills/new-feature/SKILL.md) —
+  vor und während der Implementierung: REQ-/INV-Check, ADR-Test, `flows.md` aktuell halten.
+- [`.claude/skills/spec-review/SKILL.md`](../.claude/skills/spec-review/SKILL.md) —
+  vor dem Commit oder bei Code-Review: prüft den fertigen Diff gegen `invariants.md`,
+  `requirements.md` und ADRs. Ergänzt `/code-review`, ersetzt es nicht.
