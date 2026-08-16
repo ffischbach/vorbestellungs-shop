@@ -52,6 +52,7 @@ resource "hcloud_server" "monitoring" {
 
   network {
     network_id = hcloud_network.main.id
+    ip         = "10.0.0.3"
   }
 
   depends_on = [hcloud_network_subnet.main]
@@ -119,6 +120,7 @@ resource "hcloud_server" "shop" {
 
   network {
     network_id = hcloud_network.main.id
+    ip         = "10.0.0.2"
   }
 
   depends_on = [hcloud_network_subnet.main]
