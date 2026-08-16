@@ -25,6 +25,25 @@ Server Actions keinen direkten `NextRequest`-Zugriff bieten (→ `headers()` aus
 `[x]` erledigt (`849253885`) — Limiter liest `x-real-ip` (von Caddy gesetzt, siehe
 [Sicherheitsregeln](../CLAUDE.md#sicherheitsregeln)), 5 Versuche/10min.
 
+### BL-011 · CSV-Export nutzt live Produktpreis statt Preis-Snapshot
+
+**Problem:** `apps/web/app/api/export/orders/route.ts` befüllt die CSV-Spalte "Preis"
+mit `item.product.price` (aktueller, live Preis) statt `item.price`
+(`OrderItem.price`, der zum Bestellzeitpunkt gespeicherte Snapshot — siehe
+[INV-02](domain/invariants.md#inv-02--orderitemprice-ist-ein-preis-snapshot-nicht-productprice)).
+`createOrder()` speichert den Snapshot korrekt, der Export ignoriert ihn nur.
+
+**Auswirkung:** Ändert sich ein Produktpreis während oder nach dem Event, zeigt der
+Kassen-Export für ältere Bestellungen den falschen (aktuellen statt historischen) Preis
+— Kassenpersonal gleicht dann gegen einen falschen Betrag ab.
+
+**Lösung:** `item.product.price.toString()` → `item.price.toString()` in
+`route.ts`.
+
+**Aufwand:** Trivial (~5min)
+
+`[ ]`
+
 ---
 
 ## Priorität 2 — Halbfertige Features
@@ -164,6 +183,32 @@ Test-Runner ist konfiguriert (dokumentierte Einschränkung in `CLAUDE.md`).
 
 `[x]` erledigt — Vitest + Playwright konfiguriert, siehe
 [Entwicklung](operations/development.md) und CLAUDE.md-Abschnitt "Tests".
+
+---
+
+## Priorität 6 — Wiederkehrend
+
+### BL-012 · Quartalsweises Doku-Audit
+
+**Problem:** Ohne regelmäßigen Abgleich verrotten `domain/requirements.md`,
+`domain/flows.md`, `domain/invariants.md` und `architecture/overview.md` unbemerkt gegen
+den tatsächlichen Code — genau das ist bereits einmal passiert (veraltetes Prisma-Schema
+in der Architektur-Doku, tote interne Links nach einer Umstrukturierung).
+
+**Ablauf (quartalsweise, unabhängig von einzelnen Vereins-Events):**
+1. `packages/database/prisma/schema.prisma` gegen `architecture/overview.md` diffen —
+   neue Felder/Modelle dokumentiert?
+2. Neue Server Actions / API-Routen seit letztem Audit: haben sie einen Eintrag in
+   `domain/flows.md` bzw. `domain/invariants.md`, falls sie ein nicht-offensichtliches
+   Detail enthalten?
+3. `docs/backlog.md` durchgehen: erledigte Punkte markiert, neue Erkenntnisse ergänzt?
+4. Repo-weit nach `TODO`/`FIXME` grep'en — landen relevante in `backlog.md`?
+5. Stichprobenartig 2–3 interne Doku-Links anklicken (der CI-Link-Check fängt tote Links
+   automatisch ab, aber nicht inhaltlich veraltete Ziel-Abschnitte).
+
+**Aufwand:** Klein (~1h pro Quartal)
+
+`[ ]`
 
 ---
 
