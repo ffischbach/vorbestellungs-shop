@@ -24,6 +24,7 @@ model Product {
   cartReservations CartReservation[]
 }
 
+// INV-01: kein Bestands-Lock, nur UX-Krücke — siehe docs/domain/invariants.md
 model CartReservation {
   id        String   @id @default(cuid())
   sessionId String
@@ -54,6 +55,7 @@ model PickupSlot {
 
 model Order {
   id           String      @id @default(cuid())
+  // INV-03: orderNumber ist der Join-Key im CSV-Export für vorbestellungs-kasse — siehe docs/domain/invariants.md
   orderNumber  String      @unique
   createdAt    DateTime    @default(now())
   customerName String
@@ -74,6 +76,7 @@ model Order {
 model OrderItem {
   id        String  @id @default(cuid())
   quantity  Int
+  // INV-02: Preis-Snapshot zum Bestellzeitpunkt, NICHT Product.price (live) — siehe docs/domain/invariants.md
   price     Decimal
   order     Order   @relation(fields: [orderId], references: [id])
   orderId   String

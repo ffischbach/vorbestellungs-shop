@@ -7,8 +7,9 @@ verlinkt, nicht nur in der jeweiligen Kategorie.
 
 Was das System tun soll und warum, unabhängig von der technischen Umsetzung.
 
-- [Fachliche Anforderungen](domain/requirements.md) — Zielgruppen, Kernanforderungen, DSGVO-Prinzipien, Nicht-Ziele, offene Fragen
+- [Fachliche Anforderungen](domain/requirements.md) — Zielgruppen, Kernanforderungen (REQ-IDs), DSGVO-Prinzipien, Nicht-Ziele, offene Fragen
 - [Kern-Flows](domain/flows.md) — Bestellflow, Admin-Event-Setup, E-Mail/Reminder, Kassen-Export-Contract
+- [Implementierungs-Invarianten](domain/invariants.md) — nicht-offensichtliche Implementierungsdetails (INV-IDs), die andere Features stillschweigend brechen könnten
 
 ## Architecture — technische Umsetzung
 
@@ -39,6 +40,7 @@ Wie das System gebaut ist.
 |---|---|
 | Was ein Feature fachlich leisten soll, für wen, warum | `domain/requirements.md` |
 | Wie ein Ablauf über mehrere Dateien/Systeme hinweg funktioniert | `domain/flows.md` |
+| Ein Implementierungsdetail, das andere Features stillschweigend brechen könnte | `domain/invariants.md` — plus 1-Zeilen-Kommentar im Code mit der `INV-XX`-ID |
 | Eine unumkehrbare oder teure Strukturentscheidung | neue Datei `architecture/adr/00X-thema.md` |
 | Technische Details zu Datenmodell, Auth, Deployment | `architecture/overview.md` |
 | Design-Regeln, Farben, Komponenten-Verhalten | `guidelines/` |

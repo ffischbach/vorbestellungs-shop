@@ -64,6 +64,7 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
         logger.warn({ productId: item.productId }, 'Unbekanntes Produkt bei Bestellung')
         return { success: false, error: 'PRODUCT_NOT_FOUND' }
       }
+      // INV-02: Preis wird hier als Snapshot festgehalten — siehe docs/domain/invariants.md
       resolvedItems.push({ productId: item.productId, quantity: item.quantity, price: Number(product.price) })
     }
 
@@ -80,7 +81,8 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
       }),
     }
 
-    // TODO: load rules from DB when ValidationRule model is added
+    // INV-07: hartcodierte leere Regelliste — evaluateRules() greift aktuell nie.
+    // TODO: load rules from DB when ValidationRule model is added, siehe docs/domain/invariants.md
     const results = evaluateRules([], orderContext)
     const violation = results.find((r) => !r.valid)
     if (violation && !violation.valid) {

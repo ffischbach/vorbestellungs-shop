@@ -1,0 +1,145 @@
+# Implementierungs-Invarianten
+
+> Zielgruppe: Entwickler, AI Agents. Registry von Implementierungsdetails, die für ein
+> Feature entscheidend sind, aber nicht aus dem Code selbst offensichtlich sind — Dinge,
+> die jemand beim "Aufräumen" versehentlich brechen könnte, ohne den Grund zu kennen.
+> Jede Invariante hat eine stabile ID (`INV-XX`), auf die Code-Kommentare verweisen
+> (siehe unten bei jedem Eintrag "Durchgesetzt in").
+
+**Regel:** Bevor du eine der unten verlinkten Dateien änderst — insbesondere bei
+Refactoring oder "Cleanup" ohne fachlichen Auftrag — lies den zugehörigen Eintrag.
+Neue Invarianten werden hier ergänzt, sobald ein nicht-offensichtliches Implementierungsdetail
+entdeckt wird (z. B. während Code-Review oder Doku-Audit, siehe [Backlog BL-012](../backlog.md)).
+
+---
+
+### INV-01 · `CartReservation` ist kein Bestands-Lock
+
+**Was:** `CartReservation` reserviert Bestand nicht wirklich — sie ist nur eine
+UX-Krücke, damit der Warenkorb über Browser-Sessions/Reloads erhalten bleibt.
+
+**Warum:** Ein echter Lock würde eine Reservierungs-Timeout-Logik mit Race-Conditions
+zwischen mehreren Nutzern erfordern, die für die Event-Größenordnung dieses Projekts
+nicht nötig ist. Die eigentliche Bestandsprüfung passiert serialisierbar in
+`createOrder()`.
+
+**Durchgesetzt in:** `packages/database/prisma/schema.prisma` (`CartReservation`-Modell)
+
+**Was bricht, wenn ignoriert:** Wer `CartReservation` als verlässlichen Bestandsschutz
+behandelt (z. B. Kapazitätsanzeige im Frontend darauf stützt), erzeugt eine Diskrepanz
+zur tatsächlichen, erst bei Checkout serialisierbar geprüften Verfügbarkeit.
+
+Details: [Kern-Flows → Bestellflow](flows.md#bestellflow-kunde)
+
+---
+
+### INV-02 · `OrderItem.price` ist ein Preis-Snapshot, nicht `Product.price`
+
+**Was:** `OrderItem.price` speichert den Produktpreis zum Bestellzeitpunkt. Er darf
+**nicht** durch den aktuellen (live) `Product.price` ersetzt werden.
+
+**Warum:** Produktpreise können sich zwischen Bestellungen ändern (z. B. Preisanpassung
+während des Events). Historische Bestellungen müssen den tatsächlich gezahlten Preis
+zeigen, nicht den aktuellen.
+
+**Durchgesetzt in:** `packages/database/src/queries/orders.ts` (`createOrder()` speichert
+`price: item.price` korrekt als Snapshot) und `packages/database/prisma/schema.prisma`
+(`OrderItem.price`-Feld).
+
+**⚠️ Bekannte Verletzung dieser Invariante:** `apps/web/app/api/export/orders/route.ts`
+nutzt in der CSV-Export-Spalte "Preis" aktuell `item.product.price` (live) statt
+`item.price` (Snapshot) — bestätigter Bug, siehe [Backlog BL-011](../backlog.md). Bis
+zum Fix zeigt der Kassen-Export bei nachträglichen Preisänderungen falsche historische
+Preise.
+
+---
+
+### INV-03 · CSV-Exportformat ist mit `vorbestellungs-kasse` eingefroren
+
+**Was:** Das Spaltenlayout des Bestellungs-CSV-Exports (`Bestellnummer,Name,E-Mail,
+Zeitslot,Produkt,Menge,Preis,Status`) und die Nutzung von `orderNumber` (nicht der
+internen `id`) als Join-Key sind ein Vertrag mit dem separaten Companion-Projekt
+`vorbestellungs-kasse`.
+
+**Warum:** Beide Projekte werden unabhängig deployed; es gibt keine versionierte API
+zwischen ihnen, nur den CSV-Dateiaustausch. Formatänderungen sind Breaking Changes für
+die Kasse, die still am Event-Tag fehlschlagen, nicht beim Build.
+
+**Durchgesetzt in:** `apps/web/app/api/export/orders/route.ts`
+
+**Was bricht, wenn ignoriert:** Das Format wurde bereits einmal geändert und wieder
+zurückgerollt (Commits `9afe5d1` → `a166d89` → `02d8ade`). Details:
+[Kern-Flows → CSV-Export](flows.md#csv-export-für-die-kasse).
+**Vor jeder erneuten Formatänderung: mit der Kassen-Seite klären, nicht annehmen.**
+
+---
+
+### INV-04 · Rate-Limiting liest `x-real-ip`, nicht `x-forwarded-for`
+
+**Was:** `checkRateLimit()` erwartet die Client-IP über den `x-real-ip`-Header.
+
+**Warum:** Caddy (Reverse Proxy) setzt `x-real-ip`, nicht `x-forwarded-for`. Ein Wechsel
+auf `x-forwarded-for` ohne Anpassung der Caddy-Konfiguration würde den Rate-Limiter mit
+`unknown` als Key laufen lassen (siehe Fallback in `submitOrder()`) — alle Requests
+teilen sich dann ein Kontingent.
+
+**Durchgesetzt in:** `apps/web/lib/rate-limit.ts`, `apps/web/app/actions/order.ts`
+
+Details: [Sicherheitsregeln](../../CLAUDE.md#sicherheitsregeln)
+
+---
+
+### INV-05 · `x-cron-secret`-Header-Konvention
+
+**Was:** Alle `/api/cron/*`- und `/api/export/*`-Routen, die keine Admin-Session nutzen
+(reine Server-zu-Server-Aufrufe), prüfen den `x-cron-secret`-Header gegen
+`process.env.CRON_SECRET` — kein anderer Header-Name, kein Query-Parameter.
+
+**Warum:** Konsistenz über alle Cron-Routen hinweg, damit nicht jede Route ihre eigene
+Auth-Konvention erfindet (siehe [CLAUDE.md → Authentifizierung](../../CLAUDE.md#authentifizierung--session-validierung)).
+
+**Durchgesetzt in:** `apps/web/app/api/cron/*/route.ts`
+
+---
+
+### INV-06 · Marketing-Consent-Kopplungsverbot
+
+**Was:** Der Marketing-Opt-in im Checkout darf **niemals** Voraussetzung für eine
+Bestellung sein — auch nicht indirekt (z. B. vorausgewählte Checkbox, die man aktiv
+abwählen muss).
+
+**Warum:** Art. 7(4) DSGVO (Kopplungsverbot). Ein Verstoß ist keine UX-Frage, sondern
+ein rechtliches Risiko für den Verein als Betreiber.
+
+**Durchgesetzt in:** Checkout-Formular (`marketingConsent`-Feld, Default `false`),
+`Order.marketingConsent`/`marketingConsentAt`.
+
+Details: [Fachliche Anforderungen → DSGVO-Prinzipien](requirements.md#dsgvo-prinzipien)
+
+---
+
+### INV-07 · `evaluateRules()` wird mit hartcodierter leerer Regelliste aufgerufen
+
+**Was:** `submitOrder()` ruft `evaluateRules([], orderContext)` auf — die
+Validierungsregel-Engine ist vollständig implementiert und getestet, greift aber
+aktuell **nie**, weil keine Regeln aus der DB geladen werden.
+
+**Warum wichtig:** Wer neuen Code auf Basis von "Validierungsregeln werden bereits
+durchgesetzt" schreibt, baut auf einer falschen Annahme. Das ist kein Bug, sondern ein
+bewusst unvollständiges Feature (siehe [Backlog BL-002](../backlog.md)) — aber leicht zu
+übersehen, da die Funktion aufgerufen wird und funktional aussieht.
+
+**Durchgesetzt in:** `apps/web/app/actions/order.ts` (`TODO`-Kommentar an der Aufrufstelle)
+
+---
+
+## Neue Invarianten ergänzen
+
+Wenn du beim Ändern von Code auf ein nicht-offensichtliches Implementierungsdetail
+stößt, das andere Features/Annahmen betrifft: Eintrag hier ergänzen (`INV-XX`, nächste
+freie Nummer, nie wiederverwenden) **und** einen einzeiligen Kommentar an der Stelle im
+Code setzen, der auf die ID verweist, z. B.:
+
+```ts
+// INV-04: x-real-ip, nicht x-forwarded-for — siehe docs/domain/invariants.md
+```

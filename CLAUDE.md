@@ -11,7 +11,10 @@ Companion-Projekt: [vorbestellungs-kasse](https://github.com/ffischbach/vorbeste
 Dokumentation: [`docs/README.md`](docs/README.md) ist der Einstiegspunkt (Index mit Kategorien).
 Fachliche Anforderungen und Kern-Flows stehen in `docs/domain/` — dort nachschauen, bevor
 du eine Verhaltensänderung an Bestell-, Admin- oder E-Mail-Flows vornimmst, die dieses
-Dokument nicht abdeckt.
+Dokument nicht abdeckt. **Vor Refactoring ohne fachlichen Auftrag zusätzlich
+[`docs/domain/invariants.md`](docs/domain/invariants.md) prüfen** — Implementierungsdetails,
+die andere Features stillschweigend brechen könnten, sind dort mit `INV-XX`-IDs
+dokumentiert und im Code an der jeweiligen Stelle verlinkt.
 
 ## Architektur auf einen Blick
 

@@ -11,6 +11,9 @@ export async function GET(request: NextRequest) {
 
   const orders = await getOrders({ status: 'CONFIRMED' })
 
+  // INV-03: Spaltenlayout ist mit vorbestellungs-kasse eingefroren — siehe docs/domain/invariants.md
+  // Bekannte Verletzung von INV-02: 'Preis' nutzt item.product.price (live) statt
+  // item.price (Snapshot) — siehe Backlog BL-011.
   const rows: string[][] = [
     ['Bestellnummer', 'Name', 'E-Mail', 'Zeitslot', 'Produkt', 'Menge', 'Preis', 'Status'],
     ...orders.flatMap((order) =>

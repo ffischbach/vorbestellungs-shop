@@ -4,6 +4,9 @@
  * Da die App Single-Instance deployed wird (ein Docker-Container pro Verein),
  * reicht eine prozess-globale Map. Bei horizontaler Skalierung müsste dies
  * durch Redis o.ä. ersetzt werden.
+ *
+ * INV-04: Aufrufer müssen den x-real-ip-Header verwenden (von Caddy gesetzt),
+ * nicht x-forwarded-for — siehe docs/domain/invariants.md
  */
 
 interface RateLimitEntry {

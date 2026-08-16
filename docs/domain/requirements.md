@@ -21,24 +21,28 @@ vor Ort** — der Shop wickelt keine Zahlungen ab.
 
 ## Kernanforderungen
 
-1. **Kein Zahlungsanbieter.** Keine Kreditkartendaten, kein Stripe/PayPal. Reduziert
-   PCI-Scope, rechtliche Komplexität und Vertrauensbarrieren für kleine Vereine.
-2. **Kein Kundenkonto.** Bestellung läuft komplett anonym über Name + E-Mail im
+Jede Anforderung hat eine stabile ID (`REQ-XX`), damit Code, Tests, Commits und PRs auf
+sie verweisen können. IDs werden nie wiederverwendet — wird eine Anforderung obsolet,
+bleibt sie durchgestrichen mit Begründung stehen statt gelöscht zu werden.
+
+1. **REQ-01 · Kein Zahlungsanbieter.** Keine Kreditkartendaten, kein Stripe/PayPal.
+   Reduziert PCI-Scope, rechtliche Komplexität und Vertrauensbarrieren für kleine Vereine.
+2. **REQ-02 · Kein Kundenkonto.** Bestellung läuft komplett anonym über Name + E-Mail im
    Checkout. Kein Passwort, keine Registrierung → minimale DSGVO-Angriffsfläche
    (siehe [DSGVO-Prinzipien](#dsgvo-prinzipien)).
-3. **Ein Event pro Instanz.** Die Instanz ist auf *ein* Event zugeschnitten
+3. **REQ-03 · Ein Event pro Instanz.** Die Instanz ist auf *ein* Event zugeschnitten
    (`CLUB_EVENT_NAME`, `CLUB_EVENT_DATE`), nicht auf einen Kalender wiederkehrender
    Events. Für ein neues Event wird die Instanz zurückgesetzt oder neu deployed
    (siehe [ADR-002](../architecture/adr/002-tenancy.md)).
-4. **Abholzeit ist zentral.** Jede Bestellung hat *genau einen* Zeitslot. Produkte
+4. **REQ-04 · Abholzeit ist zentral.** Jede Bestellung hat *genau einen* Zeitslot. Produkte
    können auf bestimmte Slots beschränkt sein (z. B. "Räucherfisch nur 11–12 Uhr,
    solange der Grill an ist").
-5. **Vereins-Branding, aber keine visuelle Individualisierung.** Nur Logo, Name,
+5. **REQ-05 · Vereins-Branding, aber keine visuelle Individualisierung.** Nur Logo, Name,
    Primär-/Akzentfarbe sind konfigurierbar — Layout und Komponentenverhalten sind für
    alle Vereine identisch (siehe [UI/UX Guidelines](../guidelines/ui-ux-shop.md) §1.5).
-6. **Bestellung muss stornierbar sein**, ohne dass Kundendaten inkonsistent werden
+6. **REQ-06 · Bestellung muss stornierbar sein**, ohne dass Kundendaten inkonsistent werden
    (Status `CANCELLED`, Bestellung bleibt für Audit-Zwecke erhalten statt gelöscht).
-7. **Integration mit der Kassen-App am Eventtag** — siehe
+7. **REQ-07 · Integration mit der Kassen-App am Eventtag** — siehe
    [Kassen-Export-Contract](flows.md#csv-export-für-die-kasse).
 
 ## DSGVO-Prinzipien

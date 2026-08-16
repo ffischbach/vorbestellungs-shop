@@ -10,6 +10,8 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   return withRequestContext(request, async () => {
+    // INV-05: x-cron-secret ist die einheitliche Header-Konvention für alle
+    // Cron-/Export-Routen — siehe docs/domain/invariants.md
     const secret = request.headers.get('x-cron-secret')
     if (secret !== process.env.CRON_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
