@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { getSessionFromCookie } from '@/lib/session'
 import { logoutAction } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
+import { Toaster } from '@/components/ui/sonner'
 import { AdminNav } from './AdminNav'
 
 export default async function AuthenticatedAdminLayout({ children }: { children: ReactNode }) {
@@ -30,6 +31,7 @@ export default async function AuthenticatedAdminLayout({ children }: { children:
         </form>
       </aside>
       <main className="flex-1 px-8 py-6">{children}</main>
+      <Toaster position="bottom-right" />
     </div>
   )
 }
