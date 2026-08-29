@@ -3,17 +3,18 @@ import type { OrderStatus } from '@repo/database'
 import { PageHeader } from '@/components/admin/PageHeader'
 import { OrderStatusTabs } from './OrderStatusTabs'
 import { OrderTable } from './OrderTable'
+import { OrderSearchInput } from './OrderSearchInput'
 
 export default async function OrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; q?: string }>
 }) {
-  const { status } = await searchParams
+  const { status, q } = await searchParams
   const validStatuses: OrderStatus[] = ['PENDING', 'CONFIRMED', 'CANCELLED']
   const filterStatus = validStatuses.includes(status as OrderStatus) ? (status as OrderStatus) : undefined
 
-  const orders = await getOrders({ status: filterStatus })
+  const orders = await getOrders({ status: filterStatus, search: q })
 
   return (
     <div className="space-y-6">
@@ -38,7 +39,10 @@ export default async function OrdersPage({
         }
       />
 
-      <OrderStatusTabs status={filterStatus} />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <OrderStatusTabs status={filterStatus} />
+        <OrderSearchInput initialValue={q ?? ''} />
+      </div>
 
       <OrderTable
         orders={orders.map((order) => ({

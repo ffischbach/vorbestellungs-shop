@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto'
 import { db } from '../index'
 import { Prisma, type OrderStatus } from '@prisma/client'
 
-export async function getOrders(filters?: { status?: OrderStatus; date?: Date }) {
+export async function getOrders(filters?: { status?: OrderStatus; date?: Date; search?: string }) {
   let dateFilter: { pickupSlot: { startTime: { gte: Date; lt: Date } } } | undefined
   if (filters?.date) {
     const startOfDay = new Date(filters.date)
@@ -12,10 +12,18 @@ export async function getOrders(filters?: { status?: OrderStatus; date?: Date })
     dateFilter = { pickupSlot: { startTime: { gte: startOfDay, lt: endOfDay } } }
   }
 
+  const search = filters?.search?.trim()
+
   return db.order.findMany({
     where: {
       ...(filters?.status && { status: filters.status }),
       ...dateFilter,
+      ...(search && {
+        OR: [
+          { customerName: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
     },
     include: {
       items: { include: { product: { include: { category: true } } } },

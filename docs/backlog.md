@@ -167,7 +167,9 @@ Admin-Header.
 
 **Aufwand:** Klein (~1h)
 
-`[ ]`
+`[x]` erledigt — `getOrders()` um optionalen `search`-Parameter erweitert (`contains`,
+case-insensitive, auf Name/E-Mail), URL-Param `q`, debounced Suchfeld
+(`OrderSearchInput.tsx`), Statusfilter-Tabs erhalten `q` beim Wechsel.
 
 ### BL-009 · Bestelldetailseite im Admin
 
