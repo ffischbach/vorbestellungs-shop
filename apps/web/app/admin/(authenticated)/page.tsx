@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { getOrderStats, getOrders, getPickupSlots, getCategories, getProducts, getClubConfigFromDb } from '@repo/database'
 import { buildTimeSlots } from '@/lib/slots'
+import { PageHeader } from '@/components/admin/PageHeader'
+import { SlotUtilizationTable, RecentOrdersTable } from './DashboardTables'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,10 +57,7 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-1">Übersicht aller Bestellungen</p>
-      </div>
+      <PageHeader title="Dashboard" description="Übersicht aller Bestellungen" />
 
       {/* Setup Checklist */}
       {!allDone && (
@@ -124,34 +123,15 @@ export default async function AdminDashboard() {
       {slots.length > 0 && (
         <div>
           <h2 className="text-base font-bold tracking-tight mb-3">Zeitslot-Auslastung</h2>
-          <div className="border border-border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left py-2 px-4 font-medium text-muted-foreground">Slot</th>
-                  <th className="text-left py-2 px-4 font-medium text-muted-foreground">Zeit</th>
-                  <th className="text-right py-2 px-4 font-medium text-muted-foreground">Belegt</th>
-                  <th className="text-right py-2 px-4 font-medium text-muted-foreground">Kapazität</th>
-                </tr>
-              </thead>
-              <tbody>
-                {slots.map((slot, i) => {
-                  const ts = timeSlots[i]
-                  const pct = slot.capacity ? Math.round((slot._count.orders / slot.capacity) * 100) : null
-                  return (
-                    <tr key={slot.id} className="border-b border-border last:border-0">
-                      <td className="py-2.5 px-4 font-medium">{slot.label}</td>
-                      <td className="py-2.5 px-4 text-muted-foreground">{ts.startTime} – {ts.endTime}</td>
-                      <td className="py-2.5 px-4 text-right">{slot._count.orders}</td>
-                      <td className="py-2.5 px-4 text-right text-muted-foreground">
-                        {slot.capacity ?? '∞'}{pct !== null ? ` (${pct}%)` : ''}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+          <SlotUtilizationTable
+            slots={slots.map((slot, i) => ({
+              id: slot.id,
+              label: slot.label,
+              timeRange: `${timeSlots[i].startTime} – ${timeSlots[i].endTime}`,
+              occupied: slot._count.orders,
+              capacity: slot.capacity,
+            }))}
+          />
         </div>
       )}
 
@@ -159,48 +139,16 @@ export default async function AdminDashboard() {
       {recentOrders.length > 0 && (
         <div>
           <h2 className="text-base font-bold tracking-tight mb-3">Letzte Bestellungen</h2>
-          <div className="border border-border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left py-2 px-4 font-medium text-muted-foreground">Name</th>
-                  <th className="text-left py-2 px-4 font-medium text-muted-foreground">Slot</th>
-                  <th className="text-left py-2 px-4 font-medium text-muted-foreground">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentOrders.slice(0, 10).map((order) => (
-                  <tr key={order.id} className="border-b border-border last:border-0">
-                    <td className="py-2.5 px-4 font-medium">{order.customerName}</td>
-                    <td className="py-2.5 px-4 text-muted-foreground">{order.pickupSlot.label}</td>
-                    <td className="py-2.5 px-4">
-                      <StatusBadge status={order.status} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <RecentOrdersTable
+            orders={recentOrders.slice(0, 10).map((order) => ({
+              id: order.id,
+              customerName: order.customerName,
+              pickupSlotLabel: order.pickupSlot.label,
+              status: order.status,
+            }))}
+          />
         </div>
       )}
     </div>
-  )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    PENDING: 'bg-warning/10 text-warning-foreground',
-    CONFIRMED: 'bg-success/10 text-success',
-    CANCELLED: 'bg-muted text-muted-foreground',
-  }
-  const labels: Record<string, string> = {
-    PENDING: 'Ausstehend',
-    CONFIRMED: 'Bestätigt',
-    CANCELLED: 'Storniert',
-  }
-  return (
-    <span className={`inline-block text-xs font-bold px-2 py-0.5 ${styles[status] ?? ''}`}>
-      {labels[status] ?? status}
-    </span>
   )
 }
