@@ -55,7 +55,6 @@ jobs:
           args: >-
             --offline
             --no-progress
-            --exclude-mail
             docs/**/*.md
             README.md
             CLAUDE.md
