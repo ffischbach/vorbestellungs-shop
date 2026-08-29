@@ -204,7 +204,9 @@ es einmal deaktiviert wurde.
 **Entdeckt bei:** Admin-UI-Konsistenz-Umbau (Migration auf `DataTable`/`ConfirmDialog`),
 nicht Teil dieser Aufgabe.
 
-`[ ]`
+`[x]` erledigt — `getAllProducts()` (ohne `available`-Filter) in `packages/database`,
+`admin/products/page.tsx` nutzt sie jetzt statt `getProducts()`. `getProducts()`
+unverändert für Shop/Checkout.
 
 ---
 

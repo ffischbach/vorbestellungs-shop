@@ -1,11 +1,11 @@
-import { getProducts, getCategories, getPickupSlots, getProductSoldQuantities } from '@repo/database'
+import { getAllProducts, getCategories, getPickupSlots, getProductSoldQuantities } from '@repo/database'
 import { PageHeader } from '@/components/admin/PageHeader'
 import { ProductTable } from './ProductTable'
 import { NewProductDialog } from './NewProductDialog'
 
 export default async function ProductsPage() {
   const [products, categories, slots, soldQuantities] = await Promise.all([
-    getProducts(),
+    getAllProducts(),
     getCategories(),
     getPickupSlots(),
     getProductSoldQuantities(),

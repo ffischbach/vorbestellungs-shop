@@ -8,6 +8,15 @@ export async function getProducts() {
   })
 }
 
+// Für den Admin-Bereich: zeigt auch deaktivierte Produkte, damit sie wieder
+// reaktivierbar bleiben. getProducts() (nur available: true) bleibt für den Shop.
+export async function getAllProducts() {
+  return db.product.findMany({
+    include: { category: true, allowedSlots: true },
+    orderBy: { name: 'asc' },
+  })
+}
+
 export async function getProductById(id: string) {
   return db.product.findUnique({
     where: { id },
