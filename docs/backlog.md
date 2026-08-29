@@ -167,6 +167,27 @@ Optional: Druckansicht per `@media print`.
 
 `[ ]`
 
+### BL-013 · Deaktivierte Produkte verschwinden aus der Admin-Produktliste
+
+**Problem:** `getProducts()` (`packages/database/src/queries/products.ts`) filtert
+`where: { available: true }`. Diese Query wird sowohl im Shop als auch in
+`admin/products/page.tsx` verwendet — sobald ein Admin ein Produkt über den
+Verfügbarkeits-Toggle deaktiviert, verschwindet es beim nächsten Laden komplett aus der
+Admin-Tabelle. Es gibt keinen Weg mehr, es dort wiederzufinden oder zu reaktivieren,
+außer über die Datenbank.
+
+**Auswirkung:** Reaktivieren eines Produkts ist über die UI nicht mehr möglich, sobald
+es einmal deaktiviert wurde.
+
+**Lösung:** Für den Admin-Bereich eine eigene Query (z. B. `getAllProducts()`) ohne den
+`available`-Filter einführen, `getProducts()` bleibt für den Shop wie bisher.
+
+**Aufwand:** Klein (~30min)
+**Entdeckt bei:** Admin-UI-Konsistenz-Umbau (Migration auf `DataTable`/`ConfirmDialog`),
+nicht Teil dieser Aufgabe.
+
+`[ ]`
+
 ---
 
 ## Priorität 5 — Code-Qualität
