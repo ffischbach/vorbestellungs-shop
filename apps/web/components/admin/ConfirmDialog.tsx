@@ -20,6 +20,8 @@ interface ConfirmDialogProps {
   cancelLabel?: string
   variant?: 'default' | 'destructive'
   onConfirm: () => void | Promise<void>
+  confirmDisabled?: boolean
+  children?: React.ReactNode
 }
 
 export function ConfirmDialog({
@@ -31,6 +33,8 @@ export function ConfirmDialog({
   cancelLabel = 'Abbrechen',
   variant = 'default',
   onConfirm,
+  confirmDisabled = false,
+  children,
 }: ConfirmDialogProps) {
   const [pending, setPending] = React.useState(false)
 
@@ -51,6 +55,7 @@ export function ConfirmDialog({
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
+        {children}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
             {cancelLabel}
@@ -58,7 +63,7 @@ export function ConfirmDialog({
           <Button
             variant={variant === 'destructive' ? 'destructive' : 'default'}
             onClick={handleConfirm}
-            disabled={pending}
+            disabled={pending || confirmDisabled}
           >
             {pending ? 'Wird verarbeitet…' : confirmLabel}
           </Button>

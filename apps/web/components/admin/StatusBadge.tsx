@@ -2,7 +2,7 @@ import type { OrderStatus } from '@repo/database'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
-const STATUS_LABELS: Record<OrderStatus, string> = {
+export const STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING: 'Ausstehend',
   CONFIRMED: 'Bestätigt',
   CANCELLED: 'Storniert',

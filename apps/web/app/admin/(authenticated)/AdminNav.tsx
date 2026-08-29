@@ -2,9 +2,19 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import {
+  ClipboardList,
+  Clock,
+  FolderTree,
+  LayoutDashboard,
+  Package,
+  Settings,
+  Upload,
+  type LucideIcon,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type NavItem = { href: string; label: string; exact?: boolean }
+type NavItem = { href: string; label: string; icon: LucideIcon; exact?: boolean }
 
 type NavGroup = { title: string; items: NavItem[] }
 
@@ -12,34 +22,35 @@ const navGroups: NavGroup[] = [
   {
     title: 'Betrieb',
     items: [
-      { href: '/admin', label: 'Dashboard', exact: true },
-      { href: '/admin/orders', label: 'Bestellungen' },
+      { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+      { href: '/admin/orders', label: 'Bestellungen', icon: ClipboardList },
     ],
   },
   {
     title: 'Katalog',
     items: [
-      { href: '/admin/products', label: 'Produkte' },
-      { href: '/admin/categories', label: 'Kategorien' },
-      { href: '/admin/slots', label: 'Zeitslots' },
-      { href: '/admin/import', label: 'Setup-Import' },
+      { href: '/admin/products', label: 'Produkte', icon: Package },
+      { href: '/admin/categories', label: 'Kategorien', icon: FolderTree },
+      { href: '/admin/slots', label: 'Zeitslots', icon: Clock },
+      { href: '/admin/import', label: 'Setup-Import', icon: Upload },
     ],
   },
 ]
 
-function NavLink({ href, label, exact }: NavItem) {
+function NavLink({ href, label, icon: Icon, exact }: NavItem) {
   const pathname = usePathname()
   const isActive = exact ? pathname === href : pathname.startsWith(href)
   return (
     <Link
       href={href}
       className={cn(
-        'px-3 py-2 text-sm font-medium transition-colors',
+        'flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors',
         isActive
           ? 'bg-primary/10 text-primary'
           : 'text-foreground hover:bg-muted',
       )}
     >
+      <Icon className="size-4" />
       {label}
     </Link>
   )
@@ -68,12 +79,13 @@ export function AdminNav() {
         <Link
           href="/admin/settings"
           className={cn(
-            'px-3 py-2 text-sm font-medium transition-colors block',
+            'flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors',
             isSettings
               ? 'bg-primary/10 text-primary'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground',
           )}
         >
+          <Settings className="size-4" />
           Vereinseinstellungen
         </Link>
       </div>
