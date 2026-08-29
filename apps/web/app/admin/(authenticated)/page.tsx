@@ -105,12 +105,13 @@ export default async function AdminDashboard() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
           { label: 'Gesamt', value: stats.total },
           { label: 'Ausstehend', value: stats.pending },
           { label: 'Bestätigt', value: stats.confirmed },
           { label: 'Storniert', value: stats.cancelled },
+          { label: 'Umsatz', value: `${stats.totalRevenue.toFixed(2).replace('.', ',')} €` },
         ].map((stat) => (
           <div key={stat.label} className="border border-border bg-card p-4">
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{stat.label}</p>

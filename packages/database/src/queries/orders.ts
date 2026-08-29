@@ -146,11 +146,17 @@ export async function getMarketingConsentEmails() {
 }
 
 export async function getOrderStats() {
-  const [total, pending, confirmed, cancelled] = await Promise.all([
+  const [total, pending, confirmed, cancelled, confirmedItems] = await Promise.all([
     db.order.count(),
     db.order.count({ where: { status: 'PENDING' } }),
     db.order.count({ where: { status: 'CONFIRMED' } }),
     db.order.count({ where: { status: 'CANCELLED' } }),
+    // INV-02: Preis-Snapshot (item.price), nicht Product.price — siehe docs/domain/invariants.md
+    db.orderItem.findMany({
+      where: { order: { status: 'CONFIRMED' } },
+      select: { price: true, quantity: true },
+    }),
   ])
-  return { total, pending, confirmed, cancelled }
+  const totalRevenue = confirmedItems.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
+  return { total, pending, confirmed, cancelled, totalRevenue }
 }

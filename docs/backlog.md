@@ -152,7 +152,9 @@ item.quantity` (Preis-Snapshot, siehe INV-02).
 
 **Aufwand:** Klein (~1h)
 
-`[ ]`
+`[x]` erledigt — `getOrderStats()` liefert `totalRevenue` (Summe aus `item.price *
+item.quantity` über alle `CONFIRMED`-Bestellungen, Preis-Snapshot siehe INV-02), fünftes
+Stat-Tile „Umsatz" auf dem Dashboard.
 
 ### BL-008 · Suche / Freitextfilter in der Bestellübersicht
 
