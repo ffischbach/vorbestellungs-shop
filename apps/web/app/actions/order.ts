@@ -11,6 +11,7 @@ import {
   deleteAllCartReservations,
 } from '@repo/database'
 import { evaluateRules } from '@/lib/validation/evaluate'
+import { formatInTimeZone } from '@repo/config'
 import { renderEmail } from '@repo/email'
 import { sendEmail } from '@/lib/email'
 import { getClubConfig } from '@/club.config'
@@ -129,11 +130,12 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
       })),
       pickupSlot: {
         label: order.pickupSlot.label,
-        startTime: order.pickupSlot.startTime.toLocaleTimeString('de-DE', {
+        // INV-10: Anzeige in der Vereins-Timezone, nicht Server-lokal — siehe docs/domain/invariants.md
+        startTime: formatInTimeZone(order.pickupSlot.startTime, clubConfig.timezone, {
           hour: '2-digit',
           minute: '2-digit',
         }),
-        endTime: order.pickupSlot.endTime.toLocaleTimeString('de-DE', {
+        endTime: formatInTimeZone(order.pickupSlot.endTime, clubConfig.timezone, {
           hour: '2-digit',
           minute: '2-digit',
         }),

@@ -24,7 +24,7 @@ import {
   type ShopImportPreview,
   type ShopResetSummary,
 } from '@repo/database'
-import { shopImportSchema, validationRuleSchema } from '@repo/config'
+import { shopImportSchema, validationRuleSchema, zonedDateTimeLocalToUtc } from '@repo/config'
 import { deleteFile } from '@/lib/storage'
 import { SHOP_RESET_CONFIRMATION_PHRASE } from '@/lib/shopReset'
 import { revalidatePath } from 'next/cache'
@@ -109,8 +109,10 @@ export async function createSlotAction(
 
   if (!label || !startTimeRaw || !endTimeRaw) return { error: 'Label, Start- und Endzeit sind Pflicht.' }
 
-  const startTime = new Date(startTimeRaw)
-  const endTime = new Date(endTimeRaw)
+  // INV-10: datetime-local-Werte sind Wanduhrzeit im Vereins-Timezone, nicht Server-lokal — siehe docs/domain/invariants.md
+  const clubConfig = await getClubConfig()
+  const startTime = zonedDateTimeLocalToUtc(startTimeRaw, clubConfig.timezone)
+  const endTime = zonedDateTimeLocalToUtc(endTimeRaw, clubConfig.timezone)
 
   if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) return { error: 'Ungültige Zeitangabe.' }
   if (endTime <= startTime) return { error: 'Endzeit muss nach der Startzeit liegen.' }
@@ -140,8 +142,10 @@ export async function updateSlotAction(
 
   if (!id || !label || !startTimeRaw || !endTimeRaw) return { error: 'Alle Pflichtfelder ausfüllen.' }
 
-  const startTime = new Date(startTimeRaw)
-  const endTime = new Date(endTimeRaw)
+  // INV-10: datetime-local-Werte sind Wanduhrzeit im Vereins-Timezone, nicht Server-lokal — siehe docs/domain/invariants.md
+  const clubConfig = await getClubConfig()
+  const startTime = zonedDateTimeLocalToUtc(startTimeRaw, clubConfig.timezone)
+  const endTime = zonedDateTimeLocalToUtc(endTimeRaw, clubConfig.timezone)
   if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) return { error: 'Ungültige Zeitangabe.' }
   if (endTime <= startTime) return { error: 'Endzeit muss nach der Startzeit liegen.' }
 

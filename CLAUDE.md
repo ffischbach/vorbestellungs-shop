@@ -129,7 +129,7 @@ export async function myAdminAction() {
 
 ## Club-Konfiguration
 
-`apps/web/club.config.ts` liest zur **Laufzeit** aus Umgebungsvariablen (`CLUB_NAME`, `CLUB_LOGO_URL`, `CLUB_PRIMARY_COLOR`, `CLUB_ACCENT_COLOR`, `CLUB_EVENT_NAME`, `CLUB_EVENT_DATE`, `CLUB_CONTACT_EMAIL`). Schema und Zod-Validierung in `packages/config/src/club.ts`.
+`apps/web/club.config.ts` liest zur **Laufzeit** aus Umgebungsvariablen (`CLUB_NAME`, `CLUB_LOGO_URL`, `CLUB_PRIMARY_COLOR`, `CLUB_ACCENT_COLOR`, `CLUB_EVENT_NAME`, `CLUB_EVENT_DATE`, `CLUB_CONTACT_EMAIL`, `CLUB_TIMEZONE`). Schema und Zod-Validierung in `packages/config/src/club.ts`. `CLUB_TIMEZONE` (IANA-Zeitzone, Default `Europe/Berlin`) ist bewusst nur env, nicht über die Admin-UI/DB editierbar — siehe [ADR-004](docs/architecture/adr/004-timezone.md) und [INV-10](docs/domain/invariants.md).
 
 - Nur in Server Components verwenden — niemals in Client Components importieren
 - Farben über CSS Custom Properties an Client Components weitergeben

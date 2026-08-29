@@ -13,6 +13,7 @@ export default async function CartPage() {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
+        timeZone: clubConfig.timezone,
       })}
       logoUrl={clubConfig.logoUrl}
     />

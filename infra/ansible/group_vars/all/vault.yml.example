@@ -16,6 +16,7 @@ vault_club_accent_color: "#f59e0b"
 vault_club_event_name: "Sommerfest 2025"
 vault_club_event_date: "2025-07-12"
 vault_club_contact_email: "info@musterverein.de"
+# vault_club_timezone: "Europe/Berlin"  # IANA-Zeitzone des Abholorts; weglassen = Default Europe/Berlin (ADR-004)
 vault_cron_secret: "CHANGE_ME"
 
 # Hetzner Object Storage — Access Keys aus dem Hetzner-Panel (S3 Credentials)

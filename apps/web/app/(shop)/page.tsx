@@ -26,7 +26,7 @@ export default async function ShopPage() {
       getCategories(),
     ])
 
-  const timeSlots = buildTimeSlots(slots)
+  const timeSlots = buildTimeSlots(slots, clubConfig.timezone)
 
   return (
     <ShopPageClient
@@ -36,6 +36,7 @@ export default async function ShopPage() {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
+        timeZone: clubConfig.timezone,
       })}
       logoUrl={clubConfig.logoUrl}
       slots={timeSlots}

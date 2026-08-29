@@ -269,7 +269,13 @@ dasselbe Docker-Image läuft für jeden Verein:
 ```
 CLUB_NAME, CLUB_LOGO_URL, CLUB_PRIMARY_COLOR, CLUB_ACCENT_COLOR
 CLUB_EVENT_NAME, CLUB_EVENT_DATE, CLUB_CONTACT_EMAIL
+CLUB_TIMEZONE
 ```
+
+`CLUB_TIMEZONE` (IANA-Zeitzone des Abholorts, Default `Europe/Berlin`, siehe
+[ADR-004](adr/004-timezone.md)) ist der einzige Bezugspunkt für Zeitslot-Umrechnungen —
+bewusst nicht Teil der `ClubConfig`-DB-Tabelle/Admin-UI, da Infra-Setting statt
+Event-Detail.
 
 Die `ClubConfig`-Singleton-Tabelle in der DB überschreibt diese Env-Var-Defaults, sobald
 ein Admin sie im Panel unter `/admin/settings` setzt — Env Vars sind also nur der

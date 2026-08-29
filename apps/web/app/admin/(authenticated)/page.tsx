@@ -1,22 +1,24 @@
 import Link from 'next/link'
 import { getOrderStats, getOrders, getPickupSlots, getCategories, getProducts, getClubConfigFromDb } from '@repo/database'
 import { buildTimeSlots } from '@/lib/slots'
+import { getClubConfig } from '@/club.config'
 import { PageHeader } from '@/components/admin/PageHeader'
 import { SlotUtilizationTable, RecentOrdersTable } from './DashboardTables'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboard() {
-  const [stats, slots, recentOrders, categories, products, dbConfig] = await Promise.all([
+  const [stats, slots, recentOrders, categories, products, dbConfig, clubConfig] = await Promise.all([
     getOrderStats(),
     getPickupSlots(),
     getOrders(),
     getCategories(),
     getProducts(),
     getClubConfigFromDb(),
+    getClubConfig(),
   ])
 
-  const timeSlots = buildTimeSlots(slots)
+  const timeSlots = buildTimeSlots(slots, clubConfig.timezone)
 
   const s3PublicUrl = process.env.S3_PUBLIC_URL
   const setupSteps = [

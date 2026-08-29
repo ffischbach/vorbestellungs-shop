@@ -7,12 +7,12 @@ export const dynamic = 'force-dynamic'
 
 export default async function CheckoutPage() {
   const [clubConfig, slots] = await Promise.all([getClubConfig(), getPickupSlots()])
-  const timeSlots = buildTimeSlots(slots)
+  const timeSlots = buildTimeSlots(slots, clubConfig.timezone)
 
   return (
     <CheckoutPageClient
       eventName={clubConfig.eventName}
-      eventDate={new Date(clubConfig.eventDate).toLocaleDateString('de-DE')}
+      eventDate={new Date(clubConfig.eventDate).toLocaleDateString('de-DE', { timeZone: clubConfig.timezone })}
       logoUrl={clubConfig.logoUrl}
       slots={timeSlots}
       paymentMethods={clubConfig.paymentMethods}

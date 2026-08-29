@@ -48,6 +48,13 @@ jedes `slotLabels[]`-Element exakt einem `slots[].label` — das Schema validier
 `superRefine` und meldet sonst einen Fehler mit genauem Pfad. `slotLabels` weglassen,
 wenn ein Produkt zu allen Slots passt.
 
+`slots[].startTime`/`endTime` müssen UTC-ISO-Strings mit `Z`-Suffix sein (Zod
+`.datetime()` ohne `offset: true`). Das `label` zeigt die Wanduhrzeit am Abholort; die
+Umrechnung dorthin erfolgt über `ClubConfig.timezone` (Default `Europe/Berlin`, siehe
+[ADR-004](../../../docs/architecture/adr/004-timezone.md)) — beim Erzeugen des JSON also
+die Uhrzeit aus dem `label` in dieser Zeitzone nach UTC umrechnen, nicht 1:1 als `Z`-Zeit
+übernehmen (Achtung Sommer-/Winterzeit: UTC+2 bzw. UTC+1 in `Europe/Berlin`).
+
 ## 2. Input erfragen
 
 Kurz und konkret nachfragen, was noch fehlt:

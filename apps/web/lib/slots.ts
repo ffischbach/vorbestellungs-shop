@@ -1,3 +1,4 @@
+import { formatInTimeZone } from '@repo/config'
 import type { TimeSlot } from '@/components/shop/TimeSlotPicker'
 
 type SlotRow = {
@@ -9,7 +10,8 @@ type SlotRow = {
   _count: { orders: number }
 }
 
-export function buildTimeSlots(slots: SlotRow[]): TimeSlot[] {
+// INV-10: Uhrzeit-Anzeige in der Vereins-Timezone, nicht Server-lokal — siehe docs/domain/invariants.md
+export function buildTimeSlots(slots: SlotRow[], timezone: string): TimeSlot[] {
   return slots.map((slot) => {
     const capacity = slot.capacity ?? Infinity
     const activeOrders = slot._count.orders
@@ -22,8 +24,8 @@ export function buildTimeSlots(slots: SlotRow[]): TimeSlot[] {
     return {
       id: slot.id,
       label: slot.label,
-      startTime: slot.startTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
-      endTime: slot.endTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+      startTime: formatInTimeZone(slot.startTime, timezone, { hour: '2-digit', minute: '2-digit' }),
+      endTime: formatInTimeZone(slot.endTime, timezone, { hour: '2-digit', minute: '2-digit' }),
       status,
       remainingCapacity: capacity !== Infinity ? Math.max(0, remaining) : undefined,
     }

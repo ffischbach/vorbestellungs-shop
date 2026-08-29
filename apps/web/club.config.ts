@@ -11,6 +11,8 @@ const envDefaults = {
   eventDate:      process.env.CLUB_EVENT_DATE      ?? '2025-07-12',
   contactEmail:   process.env.CLUB_CONTACT_EMAIL   ?? 'info@musterverein.de',
   paymentMethods: ['Bargeld', 'EC-Karte', 'Kreditkarte'],
+  // Infra-Setting des Abholorts, kein Event-Detail — daher nur env, nicht in der DB/Admin-UI editierbar.
+  timezone:       process.env.CLUB_TIMEZONE        ?? 'Europe/Berlin',
 }
 
 export async function getClubConfig(): Promise<ClubConfig> {
@@ -30,5 +32,6 @@ export async function getClubConfig(): Promise<ClubConfig> {
     eventDate:      db?.eventDate      ?? envDefaults.eventDate,
     contactEmail:   db?.contactEmail   ?? envDefaults.contactEmail,
     paymentMethods: db?.paymentMethods?.length ? db.paymentMethods : envDefaults.paymentMethods,
+    timezone:       envDefaults.timezone,
   })
 }

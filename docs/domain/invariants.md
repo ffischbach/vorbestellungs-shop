@@ -167,6 +167,37 @@ Migration, manuelles SQL) ohne gegen `validationRuleSchema` zu validieren, kann
 `packages/database/src/queries/validationRules.ts`, `packages/config/src/validation.ts`
 (`validationRuleSchema`)
 
+---
+
+### INV-10 · Zeitslot-Zeiten laufen immer über die feste Vereins-Timezone, nie über Server- oder Browser-Zeitzone
+
+**Was:** `PickupSlot.startTime`/`endTime` sind `DateTime` (UTC-Instant) in der DB.
+Umrechnung zwischen der Wanduhrzeit des Abholorts und diesem UTC-Instant läuft
+ausschließlich über `zonedDateTimeLocalToUtc()`/`utcToZonedDateTimeLocal()`/
+`formatInTimeZone()` aus `packages/config/src/timezone.ts`, mit `ClubConfig.timezone`
+(IANA-Zeitzone, `CLUB_TIMEZONE`-Env-Var, Default `Europe/Berlin`) als fixem Bezugspunkt —
+siehe [ADR-004](../architecture/adr/004-timezone.md).
+
+**Warum:** Der Abholtermin ist an einen physischen Ort gebunden (REQ-04). Weder die
+Server-Prozess-Zeitzone (abhängig vom Hosting, meist UTC) noch die Browser-Zeitzone des
+Betrachters (Admin oder Kunde, kann z. B. auf Reisen abweichen) dürfen die angezeigte
+oder gespeicherte Uhrzeit beeinflussen — sonst zeigt der Shop eine andere Abholzeit an,
+als am Ort tatsächlich gilt.
+
+**Was bricht, wenn ignoriert:** Wer `new Date(rawString)` oder `toLocaleTimeString()`
+ohne explizite `timeZone`-Option direkt auf `PickupSlot.startTime`/`endTime` anwendet
+(z. B. in einer neuen Server Action oder einem neuen Anzeige-Ort), koppelt das Ergebnis
+stillschweigend an die Zeitzone des ausführenden Prozesses — bei Server Actions die
+Server-Zeitzone, bei `<input type="datetime-local">` implizit die Browser-Zeitzone.
+Das führte genau zu diesem Bug: `createSlotAction`/`updateSlotAction` interpretierten den
+Formular-Wert in Server-Zeit, während `SlotTable.tsx` ihn beim Vorbefüllen in
+Browser-Zeit zurückrechnete — zwei verschiedene Zeitzonen für denselben Wert.
+
+**Durchgesetzt in:** `packages/config/src/timezone.ts`, `apps/web/app/actions/admin.ts`
+(`createSlotAction`, `updateSlotAction`), `apps/web/app/admin/(authenticated)/slots/SlotTable.tsx`,
+`apps/web/lib/slots.ts` (`buildTimeSlots`), `apps/web/app/actions/order.ts`
+(E-Mail-Bestätigung), `packages/config/src/club.ts` (`ClubConfig.timezone`)
+
 ## Neue Invarianten ergänzen
 
 Wenn du beim Ändern von Code auf ein nicht-offensichtliches Implementierungsdetail

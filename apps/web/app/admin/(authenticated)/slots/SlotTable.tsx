@@ -7,6 +7,7 @@ import { DataTable } from '@/components/admin/DataTable'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { utcToZonedDateTimeLocal, formatInTimeZone } from '@repo/config'
 import { deleteSlotAction } from '@/app/actions/admin'
 import { EditSlotForm } from './SlotForm'
 
@@ -19,22 +20,19 @@ export interface SlotRow {
   orderCount: number
 }
 
-function toDatetimeLocal(date: Date): string {
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+// INV-10: Anzeige/Formular-Vorbefüllung in der Vereins-Timezone, nicht Browser-lokal — siehe docs/domain/invariants.md
+function formatDateTime(date: Date, timezone: string): string {
+  return formatInTimeZone(date, timezone, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-function formatDateTime(date: Date): string {
-  return date.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
-
-function SlotActions({ slot }: { slot: SlotRow }) {
+function SlotActions({ slot, timezone }: { slot: SlotRow; timezone: string }) {
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
   const defaults = {
     label: slot.label,
-    startTime: toDatetimeLocal(slot.startTime),
-    endTime: toDatetimeLocal(slot.endTime),
+    startTime: utcToZonedDateTimeLocal(slot.startTime, timezone),
+    endTime: utcToZonedDateTimeLocal(slot.endTime, timezone),
     capacity: slot.capacity?.toString() ?? '',
   }
 
@@ -85,44 +83,46 @@ function SlotActions({ slot }: { slot: SlotRow }) {
   )
 }
 
-const columns: ColumnDef<SlotRow, unknown>[] = [
-  {
-    accessorKey: 'label',
-    header: 'Label',
-    cell: ({ row }) => <span className="font-medium">{row.original.label}</span>,
-  },
-  {
-    accessorKey: 'startTime',
-    header: 'Start',
-    cell: ({ row }) => <span className="text-muted-foreground text-sm">{formatDateTime(row.original.startTime)}</span>,
-  },
-  {
-    accessorKey: 'endTime',
-    header: 'Ende',
-    cell: ({ row }) => <span className="text-muted-foreground text-sm">{formatDateTime(row.original.endTime)}</span>,
-  },
-  {
-    id: 'occupancy',
-    header: 'Belegt / Kapazität',
-    enableSorting: false,
-    cell: ({ row }) => (
-      <span className="text-muted-foreground">
-        {row.original.orderCount} / {row.original.capacity ?? '∞'}
-      </span>
-    ),
-  },
-  {
-    id: 'actions',
-    header: '',
-    enableSorting: false,
-    cell: ({ row }) => <SlotActions slot={row.original} />,
-  },
-]
+function buildColumns(timezone: string): ColumnDef<SlotRow, unknown>[] {
+  return [
+    {
+      accessorKey: 'label',
+      header: 'Label',
+      cell: ({ row }) => <span className="font-medium">{row.original.label}</span>,
+    },
+    {
+      accessorKey: 'startTime',
+      header: 'Start',
+      cell: ({ row }) => <span className="text-muted-foreground text-sm">{formatDateTime(row.original.startTime, timezone)}</span>,
+    },
+    {
+      accessorKey: 'endTime',
+      header: 'Ende',
+      cell: ({ row }) => <span className="text-muted-foreground text-sm">{formatDateTime(row.original.endTime, timezone)}</span>,
+    },
+    {
+      id: 'occupancy',
+      header: 'Belegt / Kapazität',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">
+          {row.original.orderCount} / {row.original.capacity ?? '∞'}
+        </span>
+      ),
+    },
+    {
+      id: 'actions',
+      header: '',
+      enableSorting: false,
+      cell: ({ row }) => <SlotActions slot={row.original} timezone={timezone} />,
+    },
+  ]
+}
 
-export function SlotTable({ slots }: { slots: SlotRow[] }) {
+export function SlotTable({ slots, timezone }: { slots: SlotRow[]; timezone: string }) {
   return (
     <DataTable
-      columns={columns}
+      columns={buildColumns(timezone)}
       data={slots}
       getRowId={(row) => row.id}
       emptyMessage="Noch keine Zeitslots angelegt."
