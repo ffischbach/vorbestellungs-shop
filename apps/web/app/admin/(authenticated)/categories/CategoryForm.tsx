@@ -1,18 +1,26 @@
 'use client'
 
 import { useActionState, useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createCategoryAction, updateCategoryAction } from '@/app/actions/admin'
 
-export function CreateCategoryForm() {
+export function CreateCategoryForm({ onDone }: { onDone?: () => void }) {
   const [state, action, isPending] = useActionState(createCategoryAction, null)
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
-    if (state && 'success' in state) formRef.current?.reset()
-  }, [state])
+    if (!state) return
+    if ('success' in state) {
+      formRef.current?.reset()
+      toast.success('Kategorie erstellt.')
+      onDone?.()
+    } else {
+      toast.error(state.error)
+    }
+  }, [state, onDone])
 
   return (
     <form ref={formRef} action={action} className="flex items-end gap-3">
@@ -25,9 +33,6 @@ export function CreateCategoryForm() {
       <Button type="submit" disabled={isPending}>
         {isPending ? 'Erstelle…' : 'Erstellen'}
       </Button>
-      {state && 'error' in state && (
-        <p className="text-destructive text-sm self-center">{state.error}</p>
-      )}
     </form>
   )
 }
@@ -36,7 +41,13 @@ export function EditCategoryForm({ id, currentName, onDone }: { id: string; curr
   const [state, action, isPending] = useActionState(updateCategoryAction, null)
 
   useEffect(() => {
-    if (state && 'success' in state) onDone()
+    if (!state) return
+    if ('success' in state) {
+      toast.success('Kategorie aktualisiert.')
+      onDone()
+    } else {
+      toast.error(state.error)
+    }
   }, [state, onDone])
 
   return (
@@ -45,9 +56,6 @@ export function EditCategoryForm({ id, currentName, onDone }: { id: string; curr
       <Input name="name" defaultValue={currentName} className="h-8 text-sm" required autoFocus />
       <Button type="submit" size="sm" disabled={isPending}>Speichern</Button>
       <Button type="button" variant="ghost" size="sm" onClick={onDone}>Abbrechen</Button>
-      {state && 'error' in state && (
-        <p className="text-destructive text-xs">{state.error}</p>
-      )}
     </form>
   )
 }
