@@ -16,7 +16,6 @@ interface ProductCardProps {
   soldQuantity: number
   reservedByOthers: number
   allowedSlotIds: string[]
-  variants?: { id: string; name: string; price: number }[]
   index?: number
 }
 

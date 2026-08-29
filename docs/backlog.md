@@ -78,7 +78,12 @@ deutet auf ein geplantes, nie fertiggestelltes Feature hin.
 
 **Aufwand:** Klein (entfernen: ~30min) · Mittel (implementieren: ~halber Tag)
 
-`[ ]`
+`[x]` erledigt — entfernt. Kein dokumentierter fachlicher Bedarf (nur spekulatives
+Beispiel in `domain/requirements.md`), keine Admin-UI, kein Prisma-Modell. Ein Verein
+kann unterschiedliche Größen einfach als separate Produkte anlegen; eine
+Schema-Migration für ein rein spekulatives Feature war nicht gerechtfertigt.
+`variants`-Prop aus `ProductCard`, `variantName` aus `CartItem`/`CartContext`/
+`CartPageClient`/`CheckoutPageClient` entfernt.
 
 ---
 
@@ -235,8 +240,6 @@ in der Architektur-Doku, tote interne Links nach einer Umstrukturierung).
 
 ## Diskussion / Offene Fragen
 
-- **BL-003:** Brauchen wir Varianten wirklich? Falls ja, muss auch das Prisma-Schema
-  (`Product` → `ProductVariant`) erweitert werden, was eine Migration erfordert.
 - **BL-009:** Überschneidung mit `vorbestellungs-kasse` (Raspberry Pi Kasse). Klären ob
   eine Admin-Detailseite überhaupt gebraucht wird oder ob die Kasse das abdeckt.
 - **BL-002:** Rules-Admin-UI: Komplexität hängt davon ab wie viele Rule-Types aktiv

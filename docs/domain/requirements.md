@@ -92,8 +92,6 @@ klären, nicht selbstständig entscheiden:
 - Braucht der Checkout eine Telefonnummer für Rückfragen vor Ort? (In den
   [UI/UX Guidelines](../guidelines/ui-ux-shop.md) §4.4 als Pflichtfeld skizziert,
   im aktuellen Checkout-Formular aber nicht umgesetzt — Diskrepanz, nicht bestätigt.)
-- Produktvarianten (z. B. Pizzagröße) — Interface-Reste vorhanden, nie fertig
-  implementiert. Siehe [Backlog](../backlog.md).
 - Automatischer Datenaustausch mit der Kasse per Polling statt manuellem CSV-Export
   (siehe [Kassen-Export](flows.md#csv-export-für-die-kasse)) — setzt Netzwerkverbindung
   vom Raspberry Pi zum Shop-Server voraus, aktuell nicht umgesetzt.

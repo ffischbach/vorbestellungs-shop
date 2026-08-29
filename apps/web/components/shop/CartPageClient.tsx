@@ -61,7 +61,6 @@ export default function CartPageClient({
                   key={item.id}
                   id={item.id}
                   name={item.name}
-                  variantName={item.variantName}
                   price={item.price}
                   quantity={item.quantity}
                   imageUrl={item.imageUrl}

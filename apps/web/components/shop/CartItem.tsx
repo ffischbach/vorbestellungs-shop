@@ -6,7 +6,6 @@ import { Minus, Plus, Trash2 } from 'lucide-react'
 interface CartItemProps {
   id: string
   name: string
-  variantName?: string
   price: number
   quantity: number
   imageUrl?: string
@@ -17,7 +16,6 @@ interface CartItemProps {
 export function CartItem({
   id,
   name,
-  variantName,
   price,
   quantity,
   imageUrl,
@@ -50,9 +48,6 @@ export function CartItem({
       {/* Info */}
       <div className="flex-1 min-w-0">
         <h4 className="font-bold text-foreground text-sm leading-snug truncate">{name}</h4>
-        {variantName && (
-          <p className="text-xs text-muted-foreground mt-0.5">{variantName}</p>
-        )}
         <p className="text-xs font-medium text-muted-foreground mt-1">
           {price.toFixed(2).replace('.', ',')} €
         </p>

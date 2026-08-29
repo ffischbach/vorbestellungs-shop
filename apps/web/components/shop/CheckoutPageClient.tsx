@@ -333,7 +333,6 @@ export function CheckoutPageClient({
                   <div key={item.id} className="flex justify-between text-sm">
                     <span className="text-foreground">
                       {item.quantity}x {item.name}
-                      {item.variantName && ` (${item.variantName})`}
                     </span>
                     <span className="text-muted-foreground">
                       {(item.price * item.quantity).toFixed(2)} €

@@ -15,7 +15,6 @@ export interface CartItem {
   id: string
   productId: string
   name: string
-  variantName?: string
   price: number
   quantity: number
   imageUrl?: string
@@ -27,7 +26,6 @@ export interface CartItemData {
   name: string
   price: number
   imageUrl?: string
-  variantName?: string
   allowedSlotIds: string[]
 }
 
@@ -117,8 +115,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const previousItems = itemsRef.current
 
     setItems((curr) => {
-      const match = (i: CartItem) =>
-        i.productId === product.productId && i.variantName === product.variantName
+      const match = (i: CartItem) => i.productId === product.productId
       if (quantity <= 0) {
         return curr.filter((i) => !match(i))
       }
