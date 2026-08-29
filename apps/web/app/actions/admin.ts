@@ -12,6 +12,7 @@ import {
   deleteProduct,
   getProductById,
   updateOrderStatus,
+  getOrderById,
   upsertClubConfig,
   importShopData,
   previewShopImport,
@@ -29,6 +30,10 @@ import { SHOP_RESET_CONFIRMATION_PHRASE } from '@/lib/shopReset'
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
+import { renderEmail } from '@repo/email'
+import { sendEmail } from '@/lib/email'
+import { getClubConfig } from '@/club.config'
+import logger from '@/lib/logger'
 
 export type ActionState = { error: string } | { success: true } | null
 
@@ -469,11 +474,35 @@ export async function updateOrderStatusAction(formData: FormData): Promise<Actio
   const status = formData.get('status')?.toString()
   if (!id || !status) return { error: 'Ungültige Eingabe.' }
   if (!['PENDING', 'CONFIRMED', 'CANCELLED'].includes(status)) return { error: 'Ungültiger Status.' }
+
+  const orderBefore = await getOrderById(id)
   try {
     await updateOrderStatus(id, status as 'PENDING' | 'CONFIRMED' | 'CANCELLED')
   } catch {
     return { error: 'Status konnte nicht aktualisiert werden.' }
   }
   revalidatePath('/admin/orders')
+
+  if (orderBefore && orderBefore.status !== 'CANCELLED' && status === 'CANCELLED') {
+    const clubConfig = await getClubConfig()
+    const html = await renderEmail('order-cancellation', {
+      orderNumber: orderBefore.orderNumber,
+      customerName: orderBefore.customerName,
+      items: orderBefore.items.map((item) => ({ name: item.product.name, quantity: item.quantity })),
+      clubName: clubConfig.name,
+      contactEmail: clubConfig.contactEmail,
+    })
+    const emailResult = await sendEmail({
+      to: orderBefore.email,
+      subject: `Bestellung #${orderBefore.orderNumber} storniert – ${clubConfig.name}`,
+      html,
+    })
+    if (emailResult.success) {
+      logger.info({ orderId: id, orderNumber: orderBefore.orderNumber }, 'Stornierungsmail versendet')
+    } else {
+      logger.warn({ orderId: id, orderNumber: orderBefore.orderNumber }, 'Stornierungsmail-Versand fehlgeschlagen')
+    }
+  }
+
   return { success: true }
 }

@@ -92,10 +92,11 @@ Täglicher Cron (POST /api/cron/reminder, x-cron-secret Header)
   → getOrdersPendingReminder(eventDate): alle PENDING-Bestellungen für den Eventtag
     mit reminderSent = false
   → Für jede: Erinnerungsmail (order-reminder) senden, reminderSent = true setzen
-```
 
-**Bekannte Lücke:** Bei Stornierung (`status → CANCELLED`) wird aktuell **keine**
-Benachrichtigung an den Kunden verschickt — siehe [Backlog BL-004](../backlog.md).
+Admin storniert Bestellung (updateOrderStatusAction, status → CANCELLED)
+  → nur beim Übergang in CANCELLED (nicht bei erneutem Speichern eines bereits
+    stornierten Status): Stornierungsmail (order-cancellation) an den Kunden
+```
 
 ## CSV-Export für die Kasse
 

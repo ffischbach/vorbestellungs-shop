@@ -106,7 +106,9 @@ bekommt aber keine Benachrichtigung. Es gibt bereits `order-confirmation` und
 
 **Aufwand:** Klein (~2h)
 
-`[ ]`
+`[x]` erledigt — Template `order-cancellation` in `packages/email/`,
+`updateOrderStatusAction` versendet die Mail beim Übergang in `CANCELLED` (nicht bei
+erneutem Speichern eines bereits stornierten Status).
 
 ### BL-005 · E-Mail-Validierung im Checkout verbessern
 
