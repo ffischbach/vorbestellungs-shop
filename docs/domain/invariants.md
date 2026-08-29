@@ -133,6 +133,26 @@ bewusst unvollständiges Feature (siehe [Backlog BL-002](../backlog.md)) — abe
 
 ---
 
+### INV-08 · JSON-Setup-Import matcht per Name/Label, nicht per Unique-Constraint
+
+**Was:** `importShopData()` erkennt "bereits vorhanden" für Category/PickupSlot/Product
+per exaktem String-Vergleich (`name`, `label`, bzw. `(categoryId, name)` für Produkte)
+via `findFirst` — es gibt **keine** `@@unique`-Constraint auf diesen Feldern in
+`schema.prisma`.
+
+**Warum:** Bewusst keine Migration für dieses additive Tooling-Feature (siehe
+[REQ-08](requirements.md)). Ein `slug`-Feld + echter `prisma.upsert()` wäre robuster,
+aber für eine kleine, admin-only Bootstrap-Operation nicht nötig.
+
+**Durchgesetzt in:** `packages/database/src/queries/shopImport.ts`
+
+**Was bricht, wenn ignoriert:** Wer manuell eine Kategorie/ein Produkt mit exakt
+gleichem Namen wie im Import-JSON anlegt (z. B. mit abweichender Groß-/Kleinschreibung
+oder Leerzeichen), erzeugt beim nächsten Import ein Duplikat statt eines Updates — der
+Matching-Vergleich ist exakt, nicht fuzzy.
+
+---
+
 ## Neue Invarianten ergänzen
 
 Wenn du beim Ändern von Code auf ein nicht-offensichtliches Implementierungsdetail

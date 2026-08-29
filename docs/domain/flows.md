@@ -54,6 +54,26 @@ Ablauf, den ein Vereins-Admin für ein neues Event durchläuft (siehe auch
 5. Shop ist live sobald Produkte `available: true` sind — kein expliziter "Go-Live"-Schalter
 ```
 
+**Alternative zu Schritt 1–3: Setup-Import (REQ-08).** Statt Kategorien, Zeitslots und
+Produkte einzeln anzulegen, kann ein Admin sie per JSON-Datei in einem Schritt einspielen:
+
+```
+1. JSON generieren      — extern, z. B. mit dem Claude-Skill `shop-setup`
+                           (.claude/skills/shop-setup/SKILL.md), gegen
+                           packages/config/src/shopImport.ts validiert
+2. /admin/import öffnen — JSON einfügen oder Datei hochladen
+3. "Prüfen"              — importShopDataAction(json, dryRun=true) zeigt je Kategorie/
+                            Zeitslot/Produkt NEU oder AKTUALISIERT, plus Validierungsfehler
+4. "Importieren"          — importShopDataAction(json, dryRun=false) schreibt transaktional
+                            (packages/database/src/queries/shopImport.ts)
+```
+
+Matching läuft per Name/Label, nicht per DB-Unique-Constraint (siehe
+[INV-08](invariants.md)) — ein wiederholter Import mit geänderten Werten aktualisiert
+bestehende Einträge statt Duplikate anzulegen. `ClubConfig` und Validierungsregeln sind
+bewusst **nicht** Teil dieses Imports (weiterhin Schritt 4 bzw. nicht persistierbar, siehe
+[INV-07](invariants.md)).
+
 Während des Events:
 
 ```

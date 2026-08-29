@@ -44,6 +44,12 @@ bleibt sie durchgestrichen mit Begründung stehen statt gelöscht zu werden.
    (Status `CANCELLED`, Bestellung bleibt für Audit-Zwecke erhalten statt gelöscht).
 7. **REQ-07 · Integration mit der Kassen-App am Eventtag** — siehe
    [Kassen-Export-Contract](flows.md#csv-export-für-die-kasse).
+8. **REQ-08 · Setup per JSON-Import.** Der Vereins-Admin kann Kategorien, Zeitslots und
+   Produkte in einem Schritt per JSON-Datei einspielen (`/admin/import`), statt jedes
+   Element einzeln über die UI anzulegen. Das JSON kann außerhalb der App generiert
+   werden (z. B. mit KI-Unterstützung) — die App selbst ruft dafür keine externen
+   LLM-APIs auf (siehe [ADR-002](../architecture/adr/002-tenancy.md) zum
+   Single-Tenant-Betrieb, der diesen manuellen Einmal-Bootstrap pro Instanz nötig macht).
 
 ## DSGVO-Prinzipien
 

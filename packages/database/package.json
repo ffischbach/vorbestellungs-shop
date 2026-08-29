@@ -20,7 +20,8 @@
     "generate": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^6.2.1"
+    "@prisma/client": "^6.2.1",
+    "@repo/config": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20",

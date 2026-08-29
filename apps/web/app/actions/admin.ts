@@ -13,7 +13,12 @@ import {
   getProductById,
   updateOrderStatus,
   upsertClubConfig,
+  importShopData,
+  previewShopImport,
+  type ShopImportSummary,
+  type ShopImportPreview,
 } from '@repo/database'
+import { shopImportSchema } from '@repo/config'
 import { deleteFile } from '@/lib/storage'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -305,6 +310,52 @@ export async function updateClubConfigAction(
     return { success: true }
   } catch {
     return { error: 'Einstellungen konnten nicht gespeichert werden.' }
+  }
+}
+
+// =============================================================================
+// Setup-Import
+// =============================================================================
+
+export type ShopImportActionResult =
+  | { success: false; error: string }
+  | { success: true; preview: ShopImportPreview }
+  | { success: true; summary: ShopImportSummary }
+
+export async function importShopDataAction(
+  rawJson: string,
+  dryRun: boolean,
+): Promise<ShopImportActionResult> {
+  await requireAdmin()
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(rawJson)
+  } catch {
+    return { success: false, error: 'Ungültiges JSON.' }
+  }
+
+  const result = shopImportSchema.safeParse(parsed)
+  if (!result.success) {
+    const message = result.error.issues
+      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+      .join('\n')
+    return { success: false, error: message }
+  }
+
+  if (dryRun) {
+    const preview = await previewShopImport(result.data)
+    return { success: true, preview }
+  }
+
+  try {
+    const summary = await importShopData(result.data)
+    revalidatePath('/admin/categories')
+    revalidatePath('/admin/slots')
+    revalidatePath('/admin/products')
+    return { success: true, summary }
+  } catch {
+    return { success: false, error: 'Import fehlgeschlagen — es wurde nichts gespeichert.' }
   }
 }
 

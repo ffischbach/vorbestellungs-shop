@@ -22,6 +22,7 @@ const navGroups: NavGroup[] = [
       { href: '/admin/products', label: 'Produkte' },
       { href: '/admin/categories', label: 'Kategorien' },
       { href: '/admin/slots', label: 'Zeitslots' },
+      { href: '/admin/import', label: 'Setup-Import' },
     ],
   },
 ]
