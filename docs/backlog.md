@@ -249,7 +249,10 @@ in der Architektur-Doku, tote interne Links nach einer Umstrukturierung).
 
 **Aufwand:** Klein (~1h pro Quartal)
 
-`[ ]`
+`[ ]` wiederkehrend — zuletzt durchgeführt 2026-08-29 (im Zuge der Backlog-Aufarbeitung
+BL-001–BL-013): keine offenen TODO/FIXME, Schema/`overview.md` synchron, REQ-/INV-IDs
+konsistent, Stichproben-Links (INV-02, INV-09) korrekt verankert. Ergänzt: Anker-Kommentar
+für INV-06 fehlte im Checkout-Code, jetzt nachgetragen.
 
 ---
 

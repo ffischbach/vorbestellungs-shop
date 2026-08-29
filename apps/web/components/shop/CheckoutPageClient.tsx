@@ -280,6 +280,7 @@ export function CheckoutPageClient({
                 )}
               </div>
 
+              {/* INV-06: default false, darf nie vorausgewählt oder Pflicht sein — siehe docs/domain/invariants.md */}
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
