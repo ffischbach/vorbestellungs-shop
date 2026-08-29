@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -32,6 +33,13 @@ export function ImportForm() {
     startTransition(async () => {
       const res = await importShopDataAction(json, dryRun)
       setResult(res)
+      if (!dryRun) {
+        if (res.success) {
+          toast.success('Import abgeschlossen.')
+        } else {
+          toast.error(res.error)
+        }
+      }
     })
   }
 

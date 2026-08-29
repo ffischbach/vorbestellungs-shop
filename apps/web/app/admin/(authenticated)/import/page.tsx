@@ -1,4 +1,5 @@
 import { getShopResetCounts } from '@repo/database'
+import { PageHeader } from '@/components/admin/PageHeader'
 import { ImportForm } from './ImportForm'
 import { DangerZone } from './DangerZone'
 
@@ -7,13 +8,10 @@ export default async function ImportPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Setup-Import</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Kategorien, Zeitslots und Produkte in einem Schritt per JSON einspielen — z. B.
-          generiert mit dem Claude-Skill <code>shop-setup</code>.
-        </p>
-      </div>
+      <PageHeader
+        title="Setup-Import"
+        description="Kategorien, Zeitslots und Produkte in einem Schritt per JSON einspielen — z. B. generiert mit dem Claude-Skill shop-setup."
+      />
       <ImportForm />
       <DangerZone counts={counts} />
     </div>
