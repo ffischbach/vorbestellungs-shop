@@ -76,8 +76,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Browser-only reads (cookies, localStorage) must run after hydration, not
   // during the initial render, otherwise the client's first render diverges
-  // from the server-rendered HTML and React throws a hydration error.
+  // from the server-rendered HTML and React throws a hydration error — so this
+  // setState-on-mount is intentional, not the effect anti-pattern the rule guards against.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedSlotIdState(readCookie('cart_slot'))
     setSessionId(getOrCreateSessionId())
   }, [])
