@@ -63,7 +63,10 @@ Rule-Types) ist implementiert, wird aber nie genutzt. `submitOrder` übergibt ha
 
 **Aufwand:** Mittel (halber Tag)
 
-`[ ]`
+`[x]` erledigt — Prisma-Modell `ValidationRule` (Migration
+`20260829142422_add_validation_rule`), `getEnabledValidationRules()`/`getValidationRules()`
+in `packages/database`, Admin-UI unter `/admin/rules`, `submitOrder` lädt aktive Regeln
+statt hartcodiertem `[]`. Siehe [INV-09](domain/invariants.md#inv-09--validationrulerule-ist-ein-ungetyptes-json-feld).
 
 ### BL-003 · Produktvarianten fertig implementieren oder entfernen
 

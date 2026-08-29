@@ -118,18 +118,11 @@ Details: [Fachliche Anforderungen → DSGVO-Prinzipien](requirements.md#dsgvo-pr
 
 ---
 
-### INV-07 · `evaluateRules()` wird mit hartcodierter leerer Regelliste aufgerufen
+### INV-07 · `evaluateRules()` wird mit hartcodierter leerer Regelliste aufgerufen *(aufgelöst)*
 
-**Was:** `submitOrder()` ruft `evaluateRules([], orderContext)` auf — die
-Validierungsregel-Engine ist vollständig implementiert und getestet, greift aber
-aktuell **nie**, weil keine Regeln aus der DB geladen werden.
-
-**Warum wichtig:** Wer neuen Code auf Basis von "Validierungsregeln werden bereits
-durchgesetzt" schreibt, baut auf einer falschen Annahme. Das ist kein Bug, sondern ein
-bewusst unvollständiges Feature (siehe [Backlog BL-002](../backlog.md)) — aber leicht zu
-übersehen, da die Funktion aufgerufen wird und funktional aussieht.
-
-**Durchgesetzt in:** `apps/web/app/actions/order.ts` (`TODO`-Kommentar an der Aufrufstelle)
+**Status:** Aufgelöst — `submitOrder()` lädt Regeln jetzt über `getEnabledValidationRules()`
+aus dem `ValidationRule`-Modell (siehe [BL-002](../backlog.md), abgeschlossen). Eintrag
+bleibt zur Historie stehen, ID wird nicht wiederverwendet. Nachfolge-Invariante: [INV-09](#inv-09--validationrulerule-ist-ein-ungetyptes-json-feld).
 
 ---
 
@@ -152,6 +145,27 @@ oder Leerzeichen), erzeugt beim nächsten Import ein Duplikat statt eines Update
 Matching-Vergleich ist exakt, nicht fuzzy.
 
 ---
+
+### INV-09 · `ValidationRule.rule` ist ein ungetyptes Json-Feld
+
+**Was:** `ValidationRule.rule` (Prisma `Json`) hat keine Compile-Zeit-Typsicherheit. Die
+Struktur wird **nur** an den Schreibgrenzen (Admin-Actions in `app/actions/admin.ts`) über
+`validationRuleSchema` (`packages/config/src/validation.ts`) erzwungen — nicht beim
+Lesen.
+
+**Warum:** Ein direkter DB-Zugriff (z. B. manuelles Backfill-Skript, Prisma Studio) kann
+ein Objekt speichern, das nicht zu `ValidationRule` aus `@repo/config` passt.
+`getEnabledValidationRules()`/`getValidationRules()` casten `row.rule as ValidationRule`
+ungeprüft.
+
+**Was bricht, wenn ignoriert:** Wer Regeln außerhalb der Admin-Actions einspielt (Seed,
+Migration, manuelles SQL) ohne gegen `validationRuleSchema` zu validieren, kann
+`evaluateRules()` zur Laufzeit mit einem Objekt füttern, dessen `type`-Feld nicht zum
+`switch` in `apps/web/lib/validation/evaluate.ts` passt.
+
+**Durchgesetzt in:** `packages/database/prisma/schema.prisma` (`ValidationRule.rule`),
+`packages/database/src/queries/validationRules.ts`, `packages/config/src/validation.ts`
+(`validationRuleSchema`)
 
 ## Neue Invarianten ergänzen
 

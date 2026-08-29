@@ -18,8 +18,8 @@ Produktübersicht (/)
   → submitOrder() (apps/web/app/actions/order.ts):
       a. Rate-Limit-Check per Client-IP (x-real-ip Header, von Caddy gesetzt)
       b. Input-Validierung (Zod)
-      c. Validierungsregeln auswerten (evaluateRules, siehe ADR-003) — aktuell mit
-         hartcodierter leerer Regelliste, siehe Backlog BL-002
+      c. Validierungsregeln auswerten: aktive Regeln per getEnabledValidationRules()
+         laden, dann evaluateRules() (siehe ADR-003, admin-verwaltet unter /admin/rules)
       d. createOrder() — SERIALIZABLE-Transaktion:
          - Slot-Kapazität prüfen (aktive, nicht stornierte Bestellungen zählen)
          - Produkt-Stock prüfen (verkaufte Menge über alle nicht-stornierten Bestellungen)
@@ -70,9 +70,8 @@ Produkte einzeln anzulegen, kann ein Admin sie per JSON-Datei in einem Schritt e
 
 Matching läuft per Name/Label, nicht per DB-Unique-Constraint (siehe
 [INV-08](invariants.md)) — ein wiederholter Import mit geänderten Werten aktualisiert
-bestehende Einträge statt Duplikate anzulegen. `ClubConfig` und Validierungsregeln sind
-bewusst **nicht** Teil dieses Imports (weiterhin Schritt 4 bzw. nicht persistierbar, siehe
-[INV-07](invariants.md)).
+bestehende Einträge statt Duplikate anzulegen. `ClubConfig` und Validierungsregeln
+(`/admin/rules`) sind bewusst **nicht** Teil dieses Imports.
 
 Während des Events:
 

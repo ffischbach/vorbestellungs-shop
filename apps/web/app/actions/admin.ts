@@ -16,11 +16,14 @@ import {
   importShopData,
   previewShopImport,
   resetShopData,
+  createValidationRule,
+  setValidationRuleEnabled,
+  deleteValidationRule,
   type ShopImportSummary,
   type ShopImportPreview,
   type ShopResetSummary,
 } from '@repo/database'
-import { shopImportSchema } from '@repo/config'
+import { shopImportSchema, validationRuleSchema } from '@repo/config'
 import { deleteFile } from '@/lib/storage'
 import { SHOP_RESET_CONFIRMATION_PHRASE } from '@/lib/shopReset'
 import { revalidatePath } from 'next/cache'
@@ -316,6 +319,72 @@ export async function updateClubConfigAction(
   } catch {
     return { error: 'Einstellungen konnten nicht gespeichert werden.' }
   }
+}
+
+// =============================================================================
+// Validierungsregeln (ADR-003, BL-002)
+// =============================================================================
+
+export async function createValidationRuleAction(
+  _: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireAdmin()
+  const type = formData.get('type')?.toString()
+
+  let rawRule: unknown
+  switch (type) {
+    case 'pickup_slot_match':
+      rawRule = { type }
+      break
+    case 'max_quantity_per_product': {
+      const productId = formData.get('productId')?.toString()
+      const max = parseInt(formData.get('max')?.toString() ?? '', 10)
+      rawRule = { type, productId, max }
+      break
+    }
+    case 'category_requires_slot': {
+      const categoryId = formData.get('categoryId')?.toString()
+      const allowedSlotIds = formData.getAll('allowedSlotIds').map(String)
+      rawRule = { type, categoryId, allowedSlotIds }
+      break
+    }
+    default:
+      return { error: 'Ungültiger Regel-Typ.' }
+  }
+
+  const result = validationRuleSchema.safeParse(rawRule)
+  if (!result.success) return { error: 'Ungültige Regel-Eingabe.' }
+
+  try {
+    await createValidationRule(result.data)
+    revalidatePath('/admin/rules')
+    return { success: true }
+  } catch {
+    return { error: 'Regel konnte nicht erstellt werden.' }
+  }
+}
+
+export async function toggleValidationRuleAction(formData: FormData): Promise<void> {
+  await requireAdmin()
+  const id = formData.get('id')?.toString()
+  const enabled = formData.get('enabled') === 'true'
+  if (!id) return
+  await setValidationRuleEnabled(id, !enabled)
+  revalidatePath('/admin/rules')
+}
+
+export async function deleteValidationRuleAction(formData: FormData): Promise<ActionState> {
+  await requireAdmin()
+  const id = formData.get('id')?.toString()
+  if (!id) return { error: 'Ungültige Eingabe.' }
+  try {
+    await deleteValidationRule(id)
+  } catch {
+    return { error: 'Regel konnte nicht gelöscht werden.' }
+  }
+  revalidatePath('/admin/rules')
+  return { success: true }
 }
 
 // =============================================================================

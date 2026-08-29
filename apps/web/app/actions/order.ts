@@ -4,6 +4,7 @@ import { z } from 'zod'
 import {
   createOrder,
   getProducts,
+  getEnabledValidationRules,
   SlotFullError,
   SlotNotFoundError,
   ProductStockError,
@@ -81,9 +82,8 @@ export async function submitOrder(input: unknown, sessionId?: string): Promise<S
       }),
     }
 
-    // INV-07: hartcodierte leere Regelliste — evaluateRules() greift aktuell nie.
-    // TODO: load rules from DB when ValidationRule model is added, siehe docs/domain/invariants.md
-    const results = evaluateRules([], orderContext)
+    const rules = await getEnabledValidationRules()
+    const results = evaluateRules(rules, orderContext)
     const violation = results.find((r) => !r.valid)
     if (violation && !violation.valid) {
       logger.warn({ pickupSlotId, violation: violation.message }, 'Bestellung durch Validierungsregel abgelehnt')

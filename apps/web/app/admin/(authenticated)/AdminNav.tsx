@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Package,
   Settings,
+  ShieldCheck,
   Upload,
   type LucideIcon,
 } from 'lucide-react'
@@ -33,6 +34,7 @@ const navGroups: NavGroup[] = [
       { href: '/admin/categories', label: 'Kategorien', icon: FolderTree },
       { href: '/admin/slots', label: 'Zeitslots', icon: Clock },
       { href: '/admin/import', label: 'Setup-Import', icon: Upload },
+      { href: '/admin/rules', label: 'Validierungsregeln', icon: ShieldCheck },
     ],
   },
 ]

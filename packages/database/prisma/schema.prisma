@@ -90,6 +90,18 @@ enum OrderStatus {
   CANCELLED
 }
 
+// INV-09: `rule` ist nicht typsicher (Prisma Json) — Struktur wird durch
+// validationRuleSchema (packages/config) an den Schreibgrenzen erzwungen, siehe
+// docs/domain/invariants.md
+model ValidationRule {
+  id        String   @id @default(cuid())
+  enabled   Boolean  @default(true)
+  rule      Json
+  createdAt DateTime @default(now())
+
+  @@index([enabled])
+}
+
 // Singleton-Tabelle (immer genau ein Datensatz mit id = "singleton").
 // Überschreibt die Env-Var-Defaults aus club.config.ts.
 model ClubConfig {

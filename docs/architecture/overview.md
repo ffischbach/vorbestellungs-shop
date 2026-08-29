@@ -158,6 +158,17 @@ enum OrderStatus {
   CANCELLED
 }
 
+// rule: ValidationRule aus @repo/config als Json — Struktur nur an Schreibgrenzen
+// per Zod erzwungen, siehe INV-09
+model ValidationRule {
+  id        String   @id @default(cuid())
+  enabled   Boolean  @default(true)
+  rule      Json
+  createdAt DateTime @default(now())
+
+  @@index([enabled])
+}
+
 // Singleton (id = "singleton"), überschreibt die Env-Var-Defaults aus club.config.ts
 // zur Laufzeit über das Admin-Panel (/admin/settings).
 model ClubConfig {
