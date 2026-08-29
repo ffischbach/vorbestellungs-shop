@@ -139,7 +139,8 @@ bereits.
 
 **Aufwand:** Klein (~30min)
 
-`[ ]`
+`[x]` erledigt — Spalte „Betrag" in `OrderTable.tsx`, berechnet aus `item.price *
+item.quantity` (Preis-Snapshot, siehe INV-02).
 
 ### BL-007 · Gesamtumsatz auf dem Dashboard
 

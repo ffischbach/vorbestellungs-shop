@@ -51,6 +51,7 @@ export default async function OrdersPage({
             id: item.id,
             quantity: item.quantity,
             productName: item.product.name,
+            price: Number(item.price),
           })),
           marketingConsent: order.marketingConsent,
           status: order.status,

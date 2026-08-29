@@ -16,7 +16,7 @@ export interface OrderRow {
   customerName: string
   email: string
   pickupSlotLabel: string
-  items: { id: string; quantity: number; productName: string }[]
+  items: { id: string; quantity: number; productName: string; price: number }[]
   marketingConsent: boolean
   status: OrderStatus
 }
@@ -126,6 +126,14 @@ const columns: ColumnDef<OrderRow, unknown>[] = [
         ))}
       </div>
     ),
+  },
+  {
+    id: 'total',
+    header: 'Betrag',
+    cell: ({ row }) => {
+      const total = row.original.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      return <span className="font-medium whitespace-nowrap">{total.toFixed(2).replace('.', ',')} €</span>
+    },
   },
   {
     accessorKey: 'marketingConsent',
