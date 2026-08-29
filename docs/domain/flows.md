@@ -77,8 +77,10 @@ Während des Events:
 
 ```
 Bestellübersicht (/admin/orders)
-  → Nach Status filtern (PENDING/CONFIRMED/CANCELLED)
+  → Nach Status filtern (PENDING/CONFIRMED/CANCELLED), per Name/E-Mail suchen (?q=)
   → Bestellstatus ändern (updateOrderStatusAction)
+  → Bestellnummer anklicken → Detailseite (/admin/orders/[id]) mit allen Artikeln,
+    QR-Code und Druckansicht (@media print, für den Event-Tag ohne Kassen-Pi)
   → CSV-Export für Kasse herunterladen (siehe unten)
   → Marketing-Consent-CSV herunterladen (nur zustimmende Kunden)
 ```

@@ -14,7 +14,7 @@ export default async function AuthenticatedAdminLayout({ children }: { children:
   }
   return (
     <div className="flex min-h-screen">
-      <aside className="w-56 border-r bg-background px-4 py-6 flex flex-col gap-1">
+      <aside className="w-56 border-r bg-background px-4 py-6 flex flex-col gap-1 print:hidden">
         <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-4 px-3">
           Admin
         </p>
@@ -30,8 +30,10 @@ export default async function AuthenticatedAdminLayout({ children }: { children:
           </Button>
         </form>
       </aside>
-      <main className="flex-1 px-8 py-6">{children}</main>
-      <Toaster position="bottom-right" />
+      <main className="flex-1 px-8 py-6 print:p-0">{children}</main>
+      <div className="print:hidden">
+        <Toaster position="bottom-right" />
+      </div>
     </div>
   )
 }

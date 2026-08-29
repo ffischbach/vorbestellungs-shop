@@ -181,7 +181,9 @@ Optional: Druckansicht per `@media print`.
 
 **Aufwand:** Mittel (~2h)
 
-`[ ]`
+`[x]` erledigt — Route `admin/orders/[id]/page.tsx`, zeigt Bestelldaten, Artikeltabelle
+und QR-Code; Druckansicht per `@media print` (Sidebar/Toaster/Aktionen ausgeblendet).
+Bestellnummer in der Übersicht verlinkt jetzt dorthin.
 
 ### BL-013 · Deaktivierte Produkte verschwinden aus der Admin-Produktliste
 
@@ -251,7 +253,5 @@ in der Architektur-Doku, tote interne Links nach einer Umstrukturierung).
 
 ## Diskussion / Offene Fragen
 
-- **BL-009:** Überschneidung mit `vorbestellungs-kasse` (Raspberry Pi Kasse). Klären ob
-  eine Admin-Detailseite überhaupt gebraucht wird oder ob die Kasse das abdeckt.
 - **BL-002:** Rules-Admin-UI: Komplexität hängt davon ab wie viele Rule-Types aktiv
   genutzt werden. Erst mal einfache CRUD-Liste, keine Drag-and-Drop-Priorierung.

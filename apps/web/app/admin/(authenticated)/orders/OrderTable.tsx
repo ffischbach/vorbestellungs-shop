@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { OrderStatus } from '@repo/database'
@@ -95,7 +96,12 @@ const columns: ColumnDef<OrderRow, unknown>[] = [
     accessorKey: 'orderNumber',
     header: 'Bestellnr.',
     cell: ({ row }) => (
-      <span className="font-mono text-xs text-muted-foreground whitespace-nowrap">{row.original.orderNumber}</span>
+      <Link
+        href={`/admin/orders/${row.original.id}`}
+        className="font-mono text-xs text-muted-foreground hover:text-foreground hover:underline whitespace-nowrap"
+      >
+        {row.original.orderNumber}
+      </Link>
     ),
   },
   {
