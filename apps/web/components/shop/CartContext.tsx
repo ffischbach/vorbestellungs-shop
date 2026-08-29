@@ -66,17 +66,23 @@ function readCookie(name: string): string | undefined {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
-  const [isLoading, setIsLoading] = useState(() => typeof window !== 'undefined')
-  const [selectedSlotId, setSelectedSlotIdState] = useState<string | undefined>(() =>
-    typeof window !== 'undefined' ? readCookie('cart_slot') : undefined
-  )
-  const [sessionId] = useState(() => typeof window !== 'undefined' ? getOrCreateSessionId() : '')
+  const [isLoading, setIsLoading] = useState(true)
+  const [selectedSlotId, setSelectedSlotIdState] = useState<string | undefined>(undefined)
+  const [sessionId, setSessionId] = useState('')
 
   const sessionIdRef = useRef(sessionId)
   const itemsRef = useRef<CartItem[]>([])
 
   useEffect(() => { itemsRef.current = items }, [items])
   useEffect(() => { sessionIdRef.current = sessionId }, [sessionId])
+
+  // Browser-only reads (cookies, localStorage) must run after hydration, not
+  // during the initial render, otherwise the client's first render diverges
+  // from the server-rendered HTML and React throws a hydration error.
+  useEffect(() => {
+    setSelectedSlotIdState(readCookie('cart_slot'))
+    setSessionId(getOrCreateSessionId())
+  }, [])
 
   useEffect(() => {
     if (!sessionId) {
