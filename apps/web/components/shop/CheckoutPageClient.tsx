@@ -1,12 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import { z } from 'zod'
 import { Check } from 'lucide-react'
 import Link from 'next/link'
 import { ShopLayout } from './ShopLayout'
 import { useCart } from './CartContext'
 import { TimeSlotPicker, TimeSlot } from './TimeSlotPicker'
 import { submitOrder } from '@/app/actions/order'
+
+const emailSchema = z.string().email()
 
 interface CheckoutPageClientProps {
   eventName: string
@@ -37,6 +40,7 @@ export function CheckoutPageClient({
     ? selectedSlotId
     : undefined
   const [formData, setFormData] = useState({ name: '', email: '', marketingConsent: false })
+  const [emailError, setEmailError] = useState<string | null>(null)
   const [confirmed, setConfirmed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -252,15 +256,28 @@ export function CheckoutPageClient({
                   type="email"
                   required
                   value={formData.email}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="w-full h-11 px-3 border border-input bg-background text-foreground focus:outline-none focus:border-foreground transition-colors"
+                    if (emailError) setEmailError(null)
+                  }}
+                  onBlur={() => {
+                    if (formData.email && !emailSchema.safeParse(formData.email).success) {
+                      setEmailError('Bitte eine gültige E-Mail-Adresse eingeben.')
+                    }
+                  }}
+                  aria-invalid={emailError ? true : undefined}
+                  className={`w-full h-11 px-3 border bg-background text-foreground focus:outline-none transition-colors ${
+                    emailError ? 'border-destructive' : 'border-input focus:border-foreground'
+                  }`}
                   placeholder="max@beispiel.de"
                 />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Für die Bestellbestätigung per E-Mail
-                </p>
+                {emailError ? (
+                  <p className="mt-1 text-xs text-destructive">{emailError}</p>
+                ) : (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Für die Bestellbestätigung per E-Mail
+                  </p>
+                )}
               </div>
 
               <label className="flex items-start gap-3 cursor-pointer">
@@ -286,10 +303,14 @@ export function CheckoutPageClient({
                 Zurück
               </button>
               <button
-                onClick={() =>
-                  formData.name && formData.email && setStep(3)
-                }
-                disabled={!formData.name || !formData.email}
+                onClick={() => {
+                  if (!emailSchema.safeParse(formData.email).success) {
+                    setEmailError('Bitte eine gültige E-Mail-Adresse eingeben.')
+                    return
+                  }
+                  if (formData.name) setStep(3)
+                }}
+                disabled={!formData.name || !formData.email || !!emailError}
                 className="flex-1 h-12 bg-foreground text-background font-bold hover:bg-foreground/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Weiter zur Bestätigung

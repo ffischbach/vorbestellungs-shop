@@ -121,7 +121,8 @@ bevor man auf „Weiter" klicken kann.
 
 **Aufwand:** Klein (~30min)
 
-`[ ]`
+`[x]` erledigt — `onBlur`-Validierung mit `z.string().email()`, Fehlermeldung unter dem
+Feld, „Weiter"-Button blockiert bis zur Korrektur.
 
 ---
 
