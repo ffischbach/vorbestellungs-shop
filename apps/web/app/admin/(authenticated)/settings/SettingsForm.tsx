@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useActionState } from 'react'
+import { useState, useActionState, useEffect } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,20 +12,20 @@ export function SettingsForm({ current }: { current: ClubConfig }) {
   const [state, action, isPending] = useActionState(updateClubConfigAction, null)
   const [paymentMethods, setPaymentMethods] = useState<string[]>(current.paymentMethods)
   const [newMethod, setNewMethod] = useState('')
+  const [primaryColor, setPrimaryColor] = useState(current.primaryColor)
+  const [accentColor, setAccentColor] = useState(current.accentColor)
+
+  useEffect(() => {
+    if (!state) return
+    if ('success' in state) {
+      toast.success('Einstellungen gespeichert.')
+    } else {
+      toast.error(state.error)
+    }
+  }, [state])
 
   return (
     <form action={action} className="space-y-8">
-      {state && 'error' in state && (
-        <p className="text-sm text-destructive bg-destructive/10 px-4 py-3 border border-destructive/20">
-          {state.error}
-        </p>
-      )}
-      {state && 'success' in state && (
-        <p className="text-sm text-green-700 bg-green-50 px-4 py-3 border border-green-200">
-          Einstellungen gespeichert.
-        </p>
-      )}
-
       <section className="space-y-4">
         <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Verein</h2>
         <div className="grid gap-4 max-w-lg">
@@ -86,28 +87,20 @@ export function SettingsForm({ current }: { current: ClubConfig }) {
             <div className="flex items-center gap-3">
               <input
                 type="color"
-                id="primaryColorPicker"
-                defaultValue={current.primaryColor}
+                aria-label="Primärfarbe auswählen"
+                value={primaryColor}
                 className="h-9 w-14 cursor-pointer rounded border border-input bg-background p-0.5"
-                onChange={(e) => {
-                  const input = document.getElementById('primaryColor') as HTMLInputElement
-                  if (input) input.value = e.target.value
-                }}
+                onChange={(e) => setPrimaryColor(e.target.value)}
               />
               <Input
                 id="primaryColor"
                 name="primaryColor"
-                defaultValue={current.primaryColor}
+                value={primaryColor}
+                onChange={(e) => setPrimaryColor(e.target.value)}
                 pattern="^#[0-9a-fA-F]{6}$"
                 placeholder="#1a56db"
                 className="font-mono"
                 required
-                onChange={(e) => {
-                  const picker = document.getElementById('primaryColorPicker') as HTMLInputElement
-                  if (picker && /^#[0-9a-fA-F]{6}$/.test(e.target.value)) {
-                    picker.value = e.target.value
-                  }
-                }}
               />
             </div>
           </div>
@@ -116,28 +109,20 @@ export function SettingsForm({ current }: { current: ClubConfig }) {
             <div className="flex items-center gap-3">
               <input
                 type="color"
-                id="accentColorPicker"
-                defaultValue={current.accentColor}
+                aria-label="Akzentfarbe auswählen"
+                value={accentColor}
                 className="h-9 w-14 cursor-pointer rounded border border-input bg-background p-0.5"
-                onChange={(e) => {
-                  const input = document.getElementById('accentColor') as HTMLInputElement
-                  if (input) input.value = e.target.value
-                }}
+                onChange={(e) => setAccentColor(e.target.value)}
               />
               <Input
                 id="accentColor"
                 name="accentColor"
-                defaultValue={current.accentColor}
+                value={accentColor}
+                onChange={(e) => setAccentColor(e.target.value)}
                 pattern="^#[0-9a-fA-F]{6}$"
                 placeholder="#f59e0b"
                 className="font-mono"
                 required
-                onChange={(e) => {
-                  const picker = document.getElementById('accentColorPicker') as HTMLInputElement
-                  if (picker && /^#[0-9a-fA-F]{6}$/.test(e.target.value)) {
-                    picker.value = e.target.value
-                  }
-                }}
               />
             </div>
           </div>
