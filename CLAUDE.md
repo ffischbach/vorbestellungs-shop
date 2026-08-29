@@ -63,6 +63,7 @@ pnpm db:migrate:dev   # Migration erstellen (Entwicklung)
 pnpm db:seed          # Seed-Daten einspielen
 pnpm db:studio        # Prisma Studio öffnen
 pnpm db:reset         # DB zurücksetzen + seeden
+pnpm db:reset:empty   # DB zurücksetzen ohne Seed-Daten (z. B. für den Setup-Import von Grund auf)
 
 # E-Mail
 pnpm email:dev        # React Email Dev Server (Port 3001)

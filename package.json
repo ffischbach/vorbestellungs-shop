@@ -18,6 +18,7 @@
     "db:seed": "pnpm --filter @repo/database seed",
     "db:studio": "pnpm --filter @repo/database studio",
     "db:reset": "pnpm --filter @repo/database reset",
+    "db:reset:empty": "pnpm --filter @repo/database reset:empty",
     "email:dev": "pnpm --filter @repo/email dev",
     "admin:create": "pnpm --filter @repo/web admin:create"
   },

@@ -1,6 +1,10 @@
+import { getShopResetCounts } from '@repo/database'
 import { ImportForm } from './ImportForm'
+import { DangerZone } from './DangerZone'
 
-export default function ImportPage() {
+export default async function ImportPage() {
+  const counts = await getShopResetCounts()
+
   return (
     <div className="space-y-6">
       <div>
@@ -11,6 +15,7 @@ export default function ImportPage() {
         </p>
       </div>
       <ImportForm />
+      <DangerZone counts={counts} />
     </div>
   )
 }

@@ -15,11 +15,14 @@ import {
   upsertClubConfig,
   importShopData,
   previewShopImport,
+  resetShopData,
   type ShopImportSummary,
   type ShopImportPreview,
+  type ShopResetSummary,
 } from '@repo/database'
 import { shopImportSchema } from '@repo/config'
 import { deleteFile } from '@/lib/storage'
+import { SHOP_RESET_CONFIRMATION_PHRASE } from '@/lib/shopReset'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
@@ -356,6 +359,32 @@ export async function importShopDataAction(
     return { success: true, summary }
   } catch {
     return { success: false, error: 'Import fehlgeschlagen — es wurde nichts gespeichert.' }
+  }
+}
+
+export type ShopResetActionResult =
+  | { success: false; error: string }
+  | { success: true; summary: ShopResetSummary }
+
+export async function resetShopDataAction(confirmation: string): Promise<ShopResetActionResult> {
+  await requireAdmin()
+
+  if (confirmation !== SHOP_RESET_CONFIRMATION_PHRASE) {
+    return { success: false, error: 'Bestätigungstext stimmt nicht überein.' }
+  }
+
+  try {
+    const summary = await resetShopData()
+    for (const imageUrl of summary.productImageUrls) {
+      try { await deleteFile(imageUrl) } catch { /* S3-Fehler soll DB-Erfolg nicht überschreiben */ }
+    }
+    revalidatePath('/admin/categories')
+    revalidatePath('/admin/slots')
+    revalidatePath('/admin/products')
+    revalidatePath('/admin/orders')
+    return { success: true, summary }
+  } catch {
+    return { success: false, error: 'Zurücksetzen fehlgeschlagen — es wurde nichts gelöscht.' }
   }
 }
 
