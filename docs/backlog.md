@@ -42,7 +42,7 @@ Kassen-Export für ältere Bestellungen den falschen (aktuellen statt historisch
 
 **Aufwand:** Trivial (~5min)
 
-`[ ]`
+`[x]` erledigt — `item.price` statt `item.product.price` in `route.ts`.
 
 ---
 
