@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -29,20 +30,24 @@ function SlotFields({ defaults }: { defaults?: { label: string; startTime: strin
   )
 }
 
-export function CreateSlotForm() {
+export function CreateSlotForm({ onDone }: { onDone?: () => void }) {
   const [state, action, isPending] = useActionState(createSlotAction, null)
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
-    if (state && 'success' in state) formRef.current?.reset()
-  }, [state])
+    if (!state) return
+    if ('success' in state) {
+      formRef.current?.reset()
+      toast.success('Zeitslot erstellt.')
+      onDone?.()
+    } else {
+      toast.error(state.error)
+    }
+  }, [state, onDone])
 
   return (
     <form ref={formRef} action={action} className="space-y-4">
       <SlotFields />
-      {state && 'error' in state && (
-        <p className="text-destructive text-sm">{state.error}</p>
-      )}
       <Button type="submit" disabled={isPending}>
         {isPending ? 'Erstelle…' : 'Zeitslot erstellen'}
       </Button>
@@ -62,16 +67,19 @@ export function EditSlotForm({
   const [state, action, isPending] = useActionState(updateSlotAction, null)
 
   useEffect(() => {
-    if (state && 'success' in state) onDone()
+    if (!state) return
+    if ('success' in state) {
+      toast.success('Zeitslot aktualisiert.')
+      onDone()
+    } else {
+      toast.error(state.error)
+    }
   }, [state, onDone])
 
   return (
-    <form action={action} className="space-y-4 p-4 border border-border bg-muted/20">
+    <form action={action} className="space-y-4">
       <input type="hidden" name="id" value={id} />
       <SlotFields defaults={defaults} />
-      {state && 'error' in state && (
-        <p className="text-destructive text-sm">{state.error}</p>
-      )}
       <div className="flex gap-2">
         <Button type="submit" disabled={isPending}>{isPending ? 'Speichere…' : 'Speichern'}</Button>
         <Button type="button" variant="ghost" onClick={onDone}>Abbrechen</Button>
