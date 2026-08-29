@@ -24,7 +24,6 @@ import { shopImportSchema } from '@repo/config'
 import { deleteFile } from '@/lib/storage'
 import { SHOP_RESET_CONFIRMATION_PHRASE } from '@/lib/shopReset'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 
@@ -73,16 +72,17 @@ export async function updateCategoryAction(
   }
 }
 
-export async function deleteCategoryAction(formData: FormData): Promise<void> {
+export async function deleteCategoryAction(formData: FormData): Promise<ActionState> {
   await requireAdmin()
   const id = formData.get('id')?.toString()
-  if (!id) return
+  if (!id) return { error: 'Ungültige Eingabe.' }
   try {
     await deleteCategory(id)
   } catch {
-    redirect('/admin/categories?error=hat_produkte')
+    return { error: 'Kategorie kann nicht gelöscht werden — es existieren noch Produkte in dieser Kategorie.' }
   }
   revalidatePath('/admin/categories')
+  return { success: true }
 }
 
 // =============================================================================
@@ -149,16 +149,17 @@ export async function updateSlotAction(
   }
 }
 
-export async function deleteSlotAction(formData: FormData): Promise<void> {
+export async function deleteSlotAction(formData: FormData): Promise<ActionState> {
   await requireAdmin()
   const id = formData.get('id')?.toString()
-  if (!id) return
+  if (!id) return { error: 'Ungültige Eingabe.' }
   try {
     await deletePickupSlot(id)
   } catch {
-    redirect('/admin/slots?error=hat_bestellungen')
+    return { error: 'Zeitslot kann nicht gelöscht werden — es existieren bereits Bestellungen für diesen Slot.' }
   }
   revalidatePath('/admin/slots')
+  return { success: true }
 }
 
 // =============================================================================
@@ -251,20 +252,21 @@ export async function toggleProductAvailabilityAction(formData: FormData): Promi
   revalidatePath('/admin/products')
 }
 
-export async function deleteProductAction(formData: FormData): Promise<void> {
+export async function deleteProductAction(formData: FormData): Promise<ActionState> {
   await requireAdmin()
   const id = formData.get('id')?.toString()
-  if (!id) return
+  if (!id) return { error: 'Ungültige Eingabe.' }
   const product = await getProductById(id)
   try {
     await deleteProduct(id)
   } catch {
-    redirect('/admin/products?error=hat_bestellungen')
+    return { error: 'Produkt kann nicht gelöscht werden — es existieren bereits Bestellungen für dieses Produkt.' }
   }
   if (product?.imageUrl) {
     try { await deleteFile(product.imageUrl) } catch { /* S3-Fehler soll DB-Erfolg nicht überschreiben */ }
   }
   revalidatePath('/admin/products')
+  return { success: true }
 }
 
 // =============================================================================
@@ -392,12 +394,17 @@ export async function resetShopDataAction(confirmation: string): Promise<ShopRes
 // Bestellungen
 // =============================================================================
 
-export async function updateOrderStatusAction(formData: FormData): Promise<void> {
+export async function updateOrderStatusAction(formData: FormData): Promise<ActionState> {
   await requireAdmin()
   const id = formData.get('id')?.toString()
   const status = formData.get('status')?.toString()
-  if (!id || !status) return
-  if (!['PENDING', 'CONFIRMED', 'CANCELLED'].includes(status)) return
-  await updateOrderStatus(id, status as 'PENDING' | 'CONFIRMED' | 'CANCELLED')
+  if (!id || !status) return { error: 'Ungültige Eingabe.' }
+  if (!['PENDING', 'CONFIRMED', 'CANCELLED'].includes(status)) return { error: 'Ungültiger Status.' }
+  try {
+    await updateOrderStatus(id, status as 'PENDING' | 'CONFIRMED' | 'CANCELLED')
+  } catch {
+    return { error: 'Status konnte nicht aktualisiert werden.' }
+  }
   revalidatePath('/admin/orders')
+  return { success: true }
 }
